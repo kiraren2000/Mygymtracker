@@ -20,7 +20,7 @@
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); overscroll-behavior-y: contain; padding-bottom: 80px; transition: background-color 0.3s, color 0.3s; }
+        body { background-color: var(--bg); color: var(--text); overscroll-behavior-y: contain; padding-bottom: 90px; transition: background-color 0.3s, color 0.3s; }
         
         header { background-color: var(--primary); color: white; padding: max(1.5rem, env(safe-area-inset-top)) 1rem 1rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .header-title { font-size: 1.25rem; font-weight: bold; }
@@ -64,11 +64,15 @@
         .onerm-badge { display: block; font-size: 0.65rem; color: var(--success); font-weight: bold; margin-top: 2px; }
 
         /* Floating Rest Timer */
-        .timer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); padding: max(1rem, env(safe-area-inset-bottom)) 1rem 1rem; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; z-index: 50; transition: background-color 0.3s; }
-        .timer-display { font-size: 1.5rem; font-weight: bold; color: var(--primary); font-variant-numeric: tabular-nums; }
-        .timer-controls { display: flex; gap: 0.5rem; }
-        .timer-btn { padding: 0.5rem 1rem; background: var(--bg); color: var(--text); border: none; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .timer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); padding: max(0.5rem, env(safe-area-inset-bottom)) 0.5rem 0.5rem; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; z-index: 50; transition: background-color 0.3s; gap: 0.5rem; overflow-x: auto; }
+        .timer-display { font-size: 1.3rem; font-weight: bold; color: var(--primary); font-variant-numeric: tabular-nums; padding: 0 0.25rem; }
+        .timer-controls { display: flex; gap: 0.4rem; align-items: center; }
+        .timer-btn { padding: 0.5rem 0.75rem; background: var(--bg); color: var(--text); border: none; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.9rem; white-space: nowrap; }
         .timer-btn.active { background: var(--primary); color: white; }
+        
+        .custom-timer-wrapper { display: flex; align-items: center; background: var(--bg); border-radius: 20px; padding: 0.15rem; }
+        .custom-timer-wrapper input { width: 50px; border: none; background: transparent; padding: 0.35rem; font-size: 0.9rem; text-align: center; color: var(--text); }
+        .custom-timer-wrapper button { background: var(--primary); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; }
 
         /* Modals & Tabs */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(3px); }
@@ -83,7 +87,7 @@
         .tab-content.active { display: block; }
         
         .template-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .toggle-label { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; font-weight: 500; border-bottom: 1px solid var(--border); }
+        .toggle-label { display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem 0; font-weight: 500; border-bottom: 1px solid var(--border); }
 
         .flash-screen { animation: flashBg 1s 3; }
         @keyframes flashBg { 0% { background-color: var(--success); } 100% { background-color: var(--bg); } }
@@ -152,8 +156,11 @@
         <div class="timer-display" id="timer-text">00:00</div>
         <div class="timer-controls">
             <button class="timer-btn" onclick="startTimer(60)">1m</button>
-            <button class="timer-btn" onclick="startTimer(90)">1.5m</button>
             <button class="timer-btn" onclick="startTimer(120)">2m</button>
+            <div class="custom-timer-wrapper">
+                <input type="number" id="custom-time-input" placeholder="sec">
+                <button onclick="startCustomTimer()">▶</button>
+            </div>
             <button class="timer-btn" onclick="stopTimer()" style="color: var(--danger);">Stop</button>
         </div>
     </div>
@@ -212,8 +219,14 @@
             <!-- Settings Tab -->
             <div id="tab-settings" class="tab-content">
                 <label class="toggle-label">
-                    Auto-Start 90s Rest Timer
-                    <input type="checkbox" id="auto-timer-toggle" onchange="toggleAutoTimer()" style="width: auto; transform: scale(1.3);">
+                    Auto-Start Rest Timer
+                    <select id="auto-timer-select" onchange="updateAutoTimer()">
+                        <option value="0">Off</option>
+                        <option value="60">60 Seconds</option>
+                        <option value="90">90 Seconds</option>
+                        <option value="120">120 Seconds</option>
+                        <option value="180">180 Seconds</option>
+                    </select>
                 </label>
                 <button class="secondary-btn" style="width: 100%; margin-top: 1.5rem; justify-content: center;" onclick="exportCSV()">💾 Export All Data (CSV)</button>
             </div>
@@ -225,16 +238,16 @@
         let workouts = JSON.parse(localStorage.getItem('gymWorkouts')) || [];
         let templates = JSON.parse(localStorage.getItem('gymTemplates')) || [];
         let bodyweights = JSON.parse(localStorage.getItem('gymBw')) || [];
-        let autoTimerOn = localStorage.getItem('gymAutoTimer') === 'true';
+        let autoTimerDuration = parseInt(localStorage.getItem('gymAutoTimer')) || 0;
         
         let currentDate = new Date();
         const tzOffset = currentDate.getTimezoneOffset() * 60000;
         let selectedDateString = new Date(currentDate - tzOffset).toISOString().split('T')[0];
         
-        document.getElementById('auto-timer-toggle').checked = autoTimerOn;
-        function toggleAutoTimer() {
-            autoTimerOn = document.getElementById('auto-timer-toggle').checked;
-            localStorage.setItem('gymAutoTimer', autoTimerOn);
+        document.getElementById('auto-timer-select').value = autoTimerDuration;
+        function updateAutoTimer() {
+            autoTimerDuration = parseInt(document.getElementById('auto-timer-select').value);
+            localStorage.setItem('gymAutoTimer', autoTimerDuration);
         }
 
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -296,7 +309,6 @@
             
             const dailyWorkouts = workouts.filter(w => w.date === selectedDateString);
             
-            // Calculate Volume
             const vol = dailyWorkouts.reduce((sum, w) => sum + (parseFloat(w.reps) * parseFloat(w.weight)), 0);
             document.getElementById('daily-volume').innerText = vol.toLocaleString() + ' lbs/kg';
 
@@ -326,7 +338,7 @@
             e.preventDefault();
             workouts.push({ id: Date.now().toString(), date: selectedDateString, exercise: document.getElementById('exercise').value.trim(), reps: document.getElementById('reps').value, weight: document.getElementById('weight').value });
             saveData();
-            if(autoTimerOn) startTimer(90);
+            if(autoTimerDuration > 0) startTimer(autoTimerDuration);
             const r = document.getElementById('reps'); r.focus(); r.select();
         });
 
@@ -423,10 +435,18 @@
         // --- Timer / Export ---
         let timerInterval, audioCtx = null;
         function playBeep() { try { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5); } catch(e){} }
+        
+        function startCustomTimer() {
+            const val = parseInt(document.getElementById('custom-time-input').value);
+            if(val > 0) startTimer(val);
+        }
+
         function startTimer(sec) {
             clearInterval(timerInterval); if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
             let t = sec; updateTimerDisplay(t);
-            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active');
+            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active')); 
+            if(event && event.target && event.target.classList.contains('timer-btn')) event.target.classList.add('active');
+            
             timerInterval = setInterval(() => {
                 t--; updateTimerDisplay(t);
                 if(t <= 0) { clearInterval(timerInterval); document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active')); playBeep(); document.body.classList.add('flash-screen'); setTimeout(() => document.body.classList.remove('flash-screen'), 3000); }
