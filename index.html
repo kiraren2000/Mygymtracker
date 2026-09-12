@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+l<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -230,12 +230,13 @@
                 </label>
 
                 <div style="margin-top: 1.5rem;">
-                    <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem;">Transfer Data Between Safari & Home Screen</h3>
-                    <textarea id="data-sync-box" rows="3" placeholder="Export/Import code..." style="font-size: 0.8rem; margin-bottom: 0.5rem;"></textarea>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button class="secondary-btn" style="flex:1; justify-content:center;" onclick="exportDataCode()">Generate Code</button>
-                        <button class="secondary-btn" style="flex:1; justify-content:center;" onclick="importDataCode()">Load Code</button>
+                    <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem;">Export / Import Single Day</h3>
+                    <select id="export-date-select" style="margin-bottom: 0.5rem;"></select>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <button class="secondary-btn" style="flex:1; justify-content:center;" onclick="exportDayCode()">Get Day Code</button>
                     </div>
+                    <textarea id="data-sync-box" rows="2" placeholder="Paste day code here..." style="font-size: 0.8rem; margin-bottom: 0.5rem;"></textarea>
+                    <button class="secondary-btn" style="width: 100%; justify-content: center;" onclick="importDayCode()">Load Day Code</button>
                 </div>
 
                 <button class="secondary-btn" style="width: 100%; margin-top: 1.5rem; justify-content: center;" onclick="exportCSV()">💾 Export All Data (CSV)</button>
@@ -278,7 +279,11 @@
             if(tabId === 'bodyweight') renderBwChart();
         }
         function openSettingsModal() { 
-            updateAutocomplete(); document.getElementById('settings-modal').classList.add('show'); renderChart(); renderBwChart();
+            updateAutocomplete(); 
+            updateExportDropdown();
+            document.getElementById('settings-modal').classList.add('show'); 
+            renderChart(); 
+            renderBwChart();
         }
 
         function updateAutocomplete() {
@@ -288,6 +293,16 @@
             const cur = sel.value;
             sel.innerHTML = '<option value="">Select an exercise to graph...</option>' + exList.map(ex => `<option value="${ex}">${ex}</option>`).join('');
             if (exList.includes(cur)) sel.value = cur;
+        }
+
+        function updateExportDropdown() {
+            const sel = document.getElementById('export-date-select');
+            const dates = [...new Set(workouts.map(w => w.date))].sort((a,b) => new Date(b)-new Date(a));
+            if(dates.length === 0) {
+                sel.innerHTML = '<option value="">No workouts available</option>';
+                return;
+            }
+            sel.innerHTML = dates.map(d => `<option value="${d}">${new Date(d.split('-')[0], d.split('-')[1]-1, d.split('-')[2]).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} (${workouts.filter(w=>w.date===d).length} sets)</option>`).join('');
         }
 
         function renderCalendar() {
@@ -393,7 +408,7 @@
             document.getElementById('copy-modal').classList.add('show');
         }
         function executeCopyWorkout() {
-            const src = document.getElementById('copy-date-select').value;
+            const src = document.getElementById('copy-date-select'].value;
             workouts.filter(w => w.date === src).forEach(w => workouts.push({ id: Date.now().toString()+Math.random(), date: selectedDateString, exercise: w.exercise, reps: w.reps, weight: w.weight }));
             saveData(); closeModals();
         }
@@ -434,25 +449,49 @@
             });
         }
 
-        // --- Manual Data Sync Tool ---
-        function exportDataCode() {
-            const payload = { workouts, templates, bodyweights };
-            document.getElementById('data-sync-box').value = btoa(JSON.stringify(payload));
-            alert("Code generated! Copy it from the box.");
+        // --- Single Day Sync Tool ---
+        function exportDayCode() {
+            const targetDate = document.getElementById('export-date-select').value;
+            if(!targetDate) return alert("No date selected.");
+            const dayWorkouts = workouts.filter(w => w.date === targetDate);
+            if(dayWorkouts.length === 0) return alert("No workouts found for this date.");
+            
+            // Format: date~exercise~reps~weight;exercise~reps~weight
+            const compact = dayWorkouts.map(w => `${w.exercise}~${w.reps}~${w.weight}`).join(';');
+            document.getElementById('data-sync-box').value = `${targetDate}|${compact}`;
+            alert("Single day code generated!");
         }
-        function importDataCode() {
+
+        function importDayCode() {
             try {
                 const raw = document.getElementById('data-sync-box').value.trim();
-                const payload = JSON.parse(atob(raw));
-                if(payload.workouts) {
-                    localStorage.setItem('gymWorkouts', JSON.stringify(payload.workouts));
-                    localStorage.setItem('gymTemplates', JSON.stringify(payload.templates || []));
-                    localStorage.setItem('gymBw', JSON.stringify(payload.bodyweights || []));
-                    alert("Data imported successfully! Reloading app...");
-                    location.reload();
-                }
+                if(!raw || !raw.includes('|')) return alert("Invalid day code format.");
+                
+                const parts = raw.split('|');
+                const targetDate = parts[0];
+                const setsData = parts[1].split(';');
+                
+                // Remove existing sets for this date to avoid duplicates, then add imported sets
+                workouts = workouts.filter(w => w.date !== targetDate);
+                
+                setsData.forEach(item => {
+                    const setParts = item.split('~');
+                    if(setParts.length === 3) {
+                        workouts.push({
+                            id: Date.now().toString() + Math.random(),
+                            date: targetDate,
+                            exercise: setParts[0],
+                            reps: setParts[1],
+                            weight: setParts[2]
+                        });
+                    }
+                });
+                
+                localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
+                alert("Day imported successfully! Reloading app...");
+                location.reload();
             } catch(e) {
-                alert("Invalid sync code.");
+                alert("Failed to parse day code.");
             }
         }
 
