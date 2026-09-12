@@ -6,14 +6,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gym Tracker">
-    <title>Gym Tracker Pro</title>
-    <!-- Chart.js for Progress Graphs -->
+    <title>Gym Tracker Pro Max</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
             --primary: #4F46E5; --bg: #F3F4F6; --surface: #FFFFFF; 
             --text: #111827; --text-light: #6B7280; --border: #E5E7EB; 
-            --danger: #EF4444; --success: #10B981;
+            --danger: #EF4444; --success: #10B981; --accent: #F59E0B;
         }
         [data-theme="dark"] {
             --primary: #6366F1; --bg: #111827; --surface: #1F2937; 
@@ -31,10 +30,10 @@
         .card { background: var(--surface); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: background-color 0.3s; }
         h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
         
-        input { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--bg); color: var(--text); width: 100%; transition: background-color 0.3s, color 0.3s; }
-        input:focus { outline: none; border-color: var(--primary); }
+        input, select { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--bg); color: var(--text); width: 100%; }
+        input:focus, select:focus { outline: none; border-color: var(--primary); }
         button.primary-btn { padding: 0.75rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; }
-        button.secondary-btn { padding: 0.5rem; background-color: var(--border); color: var(--text); border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer; }
+        button.secondary-btn { padding: 0.5rem; background-color: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
         
         /* Calendar */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-weight: bold; }
@@ -51,15 +50,17 @@
         .form-row-2 { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: center; }
         .form-row-2 input { text-align: center; }
         
+        .volume-badge { font-size: 0.8rem; background: var(--accent); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-weight: bold; }
+        .action-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.25rem; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; table-layout: fixed; }
         th { font-size: 0.75rem; color: var(--text-light); padding-bottom: 0.5rem; text-align: center; font-weight: 500; }
         td { padding: 0.5rem 0; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
         .exercise-header td { text-align: left; font-weight: bold; background-color: var(--bg); padding: 0.5rem; border-radius: 6px; color: var(--primary); border-bottom: none; font-size: 1rem; }
         .set-number { color: var(--text-light); font-weight: 500; font-size: 0.85rem; }
-        .edit-input { width: 100%; padding: 4px 0; border: 1px dashed transparent; background: transparent; text-align: center; }
+        .edit-input { width: 100%; padding: 4px 0; border: 1px dashed transparent; background: transparent; text-align: center; color: var(--text); }
         .edit-input:focus { border-bottom: 1px solid var(--primary); background: var(--bg); }
         .delete-btn { background: transparent; color: var(--danger); padding: 0.25rem; border: none; font-size: 1.25rem; font-weight: bold; width: 100%; cursor: pointer;}
-        
         .onerm-badge { display: block; font-size: 0.65rem; color: var(--success); font-weight: bold; margin-top: 2px; }
 
         /* Floating Rest Timer */
@@ -69,12 +70,21 @@
         .timer-btn { padding: 0.5rem 1rem; background: var(--bg); color: var(--text); border: none; border-radius: 20px; font-weight: bold; cursor: pointer; }
         .timer-btn.active { background: var(--primary); color: white; }
 
-        /* Modal Settings/Stats */
+        /* Modals & Tabs */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(3px); }
         .modal.show { display: flex; }
         .modal-content { background: var(--surface); padding: 1.5rem; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: bold; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 1.25rem; font-weight: bold; }
         
+        .tab-bar { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1rem; }
+        .tab-btn { flex: 1; padding: 0.75rem; background: transparent; border: none; color: var(--text-light); font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .template-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .toggle-label { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; font-weight: 500; border-bottom: 1px solid var(--border); }
+
         .flash-screen { animation: flashBg 1s 3; }
         @keyframes flashBg { 0% { background-color: var(--success); } 100% { background-color: var(--bg); } }
     </style>
@@ -82,15 +92,14 @@
 <body>
 
     <header>
-        <div class="header-title">🏋️ Gym Tracker Pro</div>
+        <div class="header-title">🏋️ Gym Tracker</div>
         <div>
             <button class="icon-btn" onclick="toggleTheme()">🌓</button>
-            <button class="icon-btn" onclick="openModal()">⚙️</button>
+            <button class="icon-btn" onclick="openSettingsModal()">⚙️</button>
         </div>
     </header>
 
     <main>
-        <!-- Calendar Section -->
         <div class="card">
             <div class="calendar-header">
                 <button onclick="changeMonth(-1)">❮</button>
@@ -100,12 +109,16 @@
             <div class="calendar-grid" id="calendar-grid"></div>
         </div>
 
-        <!-- Logging Form & Table -->
         <div class="card">
             <h2>
                 <span id="selected-date-display">Workouts</span>
-                <button class="secondary-btn" onclick="copyPreviousWorkout()">📋 Copy Last</button>
+                <span class="volume-badge" id="daily-volume">0 lbs</span>
             </h2>
+            
+            <div class="action-row">
+                <button class="secondary-btn" onclick="openCopyModal()">📋 Copy Day</button>
+                <button class="secondary-btn" onclick="openTemplatesModal()">🔖 Templates</button>
+            </div>
             
             <form id="add-form">
                 <div class="form-row-1">
@@ -114,7 +127,7 @@
                 </div>
                 <div class="form-row-2">
                     <input type="number" id="reps" required min="1" placeholder="Reps">
-                    <input type="number" id="weight" step="0.5" required placeholder="Lbs/Kg">
+                    <input type="number" id="weight" step="0.5" required placeholder="Wt">
                     <button type="submit" class="primary-btn">+ Set</button>
                 </div>
             </form>
@@ -135,324 +148,172 @@
         </div>
     </main>
 
-    <!-- Floating Rest Timer -->
     <div class="timer-bar">
         <div class="timer-display" id="timer-text">00:00</div>
         <div class="timer-controls">
             <button class="timer-btn" onclick="startTimer(60)">1m</button>
+            <button class="timer-btn" onclick="startTimer(90)">1.5m</button>
             <button class="timer-btn" onclick="startTimer(120)">2m</button>
-            <button class="timer-btn" onclick="startTimer(180)">3m</button>
             <button class="timer-btn" onclick="stopTimer()" style="color: var(--danger);">Stop</button>
         </div>
     </div>
 
-    <!-- Settings & Stats Modal -->
-    <div class="modal" id="settings-modal">
+    <!-- Modals -->
+    <div class="modal" id="copy-modal">
         <div class="modal-content">
-            <div class="modal-header">
-                Settings & Stats
-                <button class="icon-btn" style="color: var(--text);" onclick="closeModal()">✕</button>
+            <div class="modal-header">Copy Day <button class="icon-btn" style="color: var(--text);" onclick="closeModals()">✕</button></div>
+            <select id="copy-date-select" style="margin-bottom: 1.5rem;"></select>
+            <button class="primary-btn" onclick="executeCopyWorkout()">Copy Sets</button>
+        </div>
+    </div>
+
+    <div class="modal" id="templates-modal">
+        <div class="modal-content">
+            <div class="modal-header">Templates <button class="icon-btn" style="color: var(--text);" onclick="closeModals()">✕</button></div>
+            
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+                <input type="text" id="template-name" placeholder="Name (e.g., Push Day)">
+                <button class="primary-btn" style="width: auto;" onclick="saveTemplate()">Save</button>
             </div>
             
-            <button class="primary-btn" onclick="exportCSV()" style="margin-bottom: 2rem;">💾 Export Data to CSV</button>
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Saved Routines</h3>
+            <div id="templates-list"></div>
+        </div>
+    </div>
 
-            <h3 style="margin-bottom: 1rem;">📊 Strength Progress</h3>
-            <select id="chart-exercise-select" onchange="renderChart()" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border-radius: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
-                <option value="">Select an exercise...</option>
-            </select>
-            <canvas id="progressChart" width="100" height="60"></canvas>
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">Dashboard <button class="icon-btn" style="color: var(--text);" onclick="closeModals()">✕</button></div>
+            
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="switchTab('stats')">Stats</button>
+                <button class="tab-btn" onclick="switchTab('bodyweight')">Weight</button>
+                <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
+            </div>
+
+            <!-- Stats Tab -->
+            <div id="tab-stats" class="tab-content active">
+                <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Strength Progress (1RM)</h3>
+                <select id="chart-exercise-select" onchange="renderChart()" style="margin-bottom: 1rem;">
+                    <option value="">Select an exercise...</option>
+                </select>
+                <canvas id="progressChart" width="100" height="65"></canvas>
+            </div>
+
+            <!-- Bodyweight Tab -->
+            <div id="tab-bodyweight" class="tab-content">
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <input type="number" id="bw-input" step="0.1" placeholder="Current Wt (lbs/kg)">
+                    <button class="primary-btn" style="width: auto;" onclick="saveBodyweight()">Log</button>
+                </div>
+                <canvas id="bwChart" width="100" height="65"></canvas>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-content">
+                <label class="toggle-label">
+                    Auto-Start 90s Rest Timer
+                    <input type="checkbox" id="auto-timer-toggle" onchange="toggleAutoTimer()" style="width: auto; transform: scale(1.3);">
+                </label>
+                <button class="secondary-btn" style="width: 100%; margin-top: 1.5rem; justify-content: center;" onclick="exportCSV()">💾 Export All Data (CSV)</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- Core Data Management ---
+        // --- State Management ---
         let workouts = JSON.parse(localStorage.getItem('gymWorkouts')) || [];
+        let templates = JSON.parse(localStorage.getItem('gymTemplates')) || [];
+        let bodyweights = JSON.parse(localStorage.getItem('gymBw')) || [];
+        let autoTimerOn = localStorage.getItem('gymAutoTimer') === 'true';
+        
         let currentDate = new Date();
         const tzOffset = currentDate.getTimezoneOffset() * 60000;
         let selectedDateString = new Date(currentDate - tzOffset).toISOString().split('T')[0];
+        
+        document.getElementById('auto-timer-toggle').checked = autoTimerOn;
+        function toggleAutoTimer() {
+            autoTimerOn = document.getElementById('auto-timer-toggle').checked;
+            localStorage.setItem('gymAutoTimer', autoTimerOn);
+        }
 
-        // --- Theme Engine ---
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
-        
         function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme');
-            const target = current === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', target);
-            localStorage.setItem('theme', target);
-            renderChart(); // Redraw chart for new colors
+            const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('theme', t);
+            renderChart(); renderBwChart();
         }
 
-        // --- Smart Autocomplete ---
-        function updateAutocomplete() {
-            const historyList = document.getElementById('exercise-history');
-            const chartSelect = document.getElementById('chart-exercise-select');
-            
-            // Get unique exercises sorted alphabetically
-            const uniqueExercises = [...new Set(workouts.map(w => w.exercise.trim()))].sort();
-            
-            historyList.innerHTML = uniqueExercises.map(ex => `<option value="${ex}">`).join('');
-            
-            // Keep chart selection intact if possible
-            const currentSelection = chartSelect.value;
-            chartSelect.innerHTML = '<option value="">Select an exercise to graph...</option>' + 
-                uniqueExercises.map(ex => `<option value="${ex}">${ex}</option>`).join('');
-            if (uniqueExercises.includes(currentSelection)) chartSelect.value = currentSelection;
-        }
-
-        // --- Copy Previous Workout ---
-        function copyPreviousWorkout() {
-            // Find all dates before the currently selected date that have workouts
-            const pastDates = [...new Set(workouts.map(w => w.date))]
-                .filter(d => d < selectedDateString)
-                .sort((a, b) => new Date(b) - new Date(a));
-
-            if (pastDates.length === 0) {
-                alert("No previous workouts found to copy.");
-                return;
-            }
-
-            const lastDate = pastDates[0];
-            const previousWorkouts = workouts.filter(w => w.date === lastDate);
-
-            if (confirm(`Copy ${previousWorkouts.length} sets from ${lastDate}?`)) {
-                previousWorkouts.forEach(w => {
-                    workouts.push({
-                        id: Date.now().toString() + Math.floor(Math.random() * 1000),
-                        date: selectedDateString,
-                        exercise: w.exercise,
-                        reps: w.reps,
-                        weight: w.weight
-                    });
-                });
-                saveData();
-            }
-        }
-
-        // --- Export CSV ---
-        function exportCSV() {
-            if (workouts.length === 0) return alert("No data to export.");
-            
-            let csvContent = "data:text/csv;charset=utf-8,Date,Exercise,Sets,Reps,Weight\n";
-            
-            // Group and format for standard spreadsheet reading
-            workouts.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(w => {
-                csvContent += `${w.date},"${w.exercise}",1,${w.reps},${w.weight}\n`;
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Gym_Tracker_Backup_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // --- 1 Rep Max Calculator (Brzycki Formula) ---
-        function calculate1RM(reps, weight) {
-            const r = parseInt(reps);
-            const w = parseFloat(weight);
-            if (r === 1) return w.toFixed(1);
-            if (r > 36) return 0; // Formula breaks down at high reps
-            return (w * (36 / (37 - r))).toFixed(1);
-        }
-
-        // --- Timer & Audio Synthesizer ---
-        let timerInterval;
-        let audioCtx = null;
-
-        function playBeep() {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gain.gain.setValueAtTime(1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.5);
-            } catch(e) { console.log("Audio not supported"); }
-        }
-
-        function startTimer(seconds) {
-            clearInterval(timerInterval);
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-            
-            let timeLeft = seconds;
-            updateTimerDisplay(timeLeft);
-            
-            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+        // --- Modals & Tabs ---
+        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('show')); }
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             event.target.classList.add('active');
-
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay(timeLeft);
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
-                    playBeep();
-                    // Visual haptic substitute
-                    document.body.classList.add('flash-screen');
-                    setTimeout(() => document.body.classList.remove('flash-screen'), 3000);
-                }
-            }, 1000);
+            document.getElementById('tab-' + tabId).classList.add('active');
+            if(tabId === 'stats') renderChart();
+            if(tabId === 'bodyweight') renderBwChart();
+        }
+        function openSettingsModal() { 
+            updateAutocomplete(); document.getElementById('settings-modal').classList.add('show'); renderChart(); renderBwChart();
         }
 
-        function stopTimer() {
-            clearInterval(timerInterval);
-            updateTimerDisplay(0);
-            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+        // --- Core UI & Logic ---
+        function updateAutocomplete() {
+            const exList = [...new Set(workouts.map(w => w.exercise.trim()))].sort();
+            document.getElementById('exercise-history').innerHTML = exList.map(ex => `<option value="${ex}">`).join('');
+            const sel = document.getElementById('chart-exercise-select');
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">Select an exercise to graph...</option>' + exList.map(ex => `<option value="${ex}">${ex}</option>`).join('');
+            if (exList.includes(cur)) sel.value = cur;
         }
 
-        function updateTimerDisplay(totalSeconds) {
-            const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-            const s = (totalSeconds % 60).toString().padStart(2, '0');
-            document.getElementById('timer-text').innerText = `${m}:${s}`;
-        }
-
-        // --- Chart.js Progress Graph ---
-        let progressChart = null;
-
-        function renderChart() {
-            const exercise = document.getElementById('chart-exercise-select').value;
-            const ctx = document.getElementById('progressChart').getContext('2d');
-            
-            if (progressChart) progressChart.destroy();
-            if (!exercise) return;
-
-            // Get all instances of this exercise, sorted chronologically
-            const history = workouts
-                .filter(w => w.exercise === exercise)
-                .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            // Map highest Estimated 1RM per day
-            const dailyMax = {};
-            history.forEach(w => {
-                const est1RM = parseFloat(calculate1RM(w.reps, w.weight));
-                if (!dailyMax[w.date] || est1RM > dailyMax[w.date]) {
-                    dailyMax[w.date] = est1RM;
-                }
-            });
-
-            const labels = Object.keys(dailyMax).map(d => new Date(d).toLocaleDateString('en-US', {month:'short', day:'numeric'}));
-            const data = Object.values(dailyMax);
-            
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const gridColor = isDark ? '#374151' : '#E5E7EB';
-            const textColor = isDark ? '#9CA3AF' : '#6B7280';
-
-            progressChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Estimated 1RM',
-                        data: data,
-                        borderColor: '#4F46E5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#4F46E5',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: gridColor }, ticks: { color: textColor } },
-                        y: { grid: { color: gridColor }, ticks: { color: textColor } }
-                    }
-                }
-            });
-        }
-
-        // --- Modal Control ---
-        function openModal() {
-            updateAutocomplete();
-            document.getElementById('settings-modal').classList.add('show');
-        }
-        function closeModal() {
-            document.getElementById('settings-modal').classList.remove('show');
-        }
-
-        // --- Calendar Logic ---
         function renderCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = '';
-            
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
+            const grid = document.getElementById('calendar-grid'); grid.innerHTML = '';
+            const y = currentDate.getFullYear(), m = currentDate.getMonth();
             document.getElementById('month-year').innerText = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
             ['S','M','T','W','T','F','S'].forEach(d => {
                 const el = document.createElement('div'); el.className = 'day-name'; el.innerText = d; grid.appendChild(el);
             });
-
-            for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
-
-            for (let i = 1; i <= daysInMonth; i++) {
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'calendar-day';
-                dayDiv.innerText = i;
-
-                const dayString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-                
-                if (dayString === selectedDateString) dayDiv.classList.add('selected');
-                if (workouts.some(w => w.date === dayString)) {
-                    const dot = document.createElement('div'); dot.className = 'workout-dot'; dayDiv.appendChild(dot);
-                }
-
-                dayDiv.onclick = () => { selectedDateString = dayString; renderCalendar(); renderTable(); };
+            for (let i = 0; i < new Date(y, m, 1).getDay(); i++) grid.appendChild(document.createElement('div'));
+            for (let i = 1; i <= new Date(y, m + 1, 0).getDate(); i++) {
+                const dayDiv = document.createElement('div'); dayDiv.className = 'calendar-day'; dayDiv.innerText = i;
+                const dStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                if (dStr === selectedDateString) dayDiv.classList.add('selected');
+                if (workouts.some(w => w.date === dStr)) { const dot = document.createElement('div'); dot.className = 'workout-dot'; dayDiv.appendChild(dot); }
+                dayDiv.onclick = () => { selectedDateString = dStr; renderCalendar(); renderTable(); };
                 grid.appendChild(dayDiv);
             }
         }
-
         function changeMonth(offset) { currentDate.setMonth(currentDate.getMonth() + offset); renderCalendar(); }
 
-        // --- Grouped Editable Table Logic ---
         function renderTable() {
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
-
+            const tbody = document.getElementById('table-body'); tbody.innerHTML = '';
             const [y, m, d] = selectedDateString.split('-');
-            const displayDate = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-            document.getElementById('selected-date-display').innerText = `Log for ${displayDate}`;
-
+            document.getElementById('selected-date-display').innerText = `Log for ${new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`;
+            
             const dailyWorkouts = workouts.filter(w => w.date === selectedDateString);
+            
+            // Calculate Volume
+            const vol = dailyWorkouts.reduce((sum, w) => sum + (parseFloat(w.reps) * parseFloat(w.weight)), 0);
+            document.getElementById('daily-volume').innerText = vol.toLocaleString() + ' lbs/kg';
 
-            if (dailyWorkouts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-light); padding: 2rem 0;">No sets logged on this date.</td></tr>';
-                return;
-            }
+            if (dailyWorkouts.length === 0) return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-light); padding: 2rem 0;">No sets logged.</td></tr>';
+            
+            const grouped = {};
+            dailyWorkouts.forEach(w => { const n = w.exercise.trim(); if(!grouped[n]) grouped[n]=[]; grouped[n].push(w); });
 
-            const groupedWorkouts = {};
-            dailyWorkouts.forEach(w => {
-                const name = w.exercise.trim();
-                if (!groupedWorkouts[name]) groupedWorkouts[name] = [];
-                groupedWorkouts[name].push(w);
-            });
-
-            for (const [exerciseName, sets] of Object.entries(groupedWorkouts)) {
-                tbody.innerHTML += `<tr class="exercise-header"><td colspan="4">${exerciseName}</td></tr>`;
-                
-                sets.forEach((w, index) => {
-                    const est1RM = calculate1RM(w.reps, w.weight);
+            for (const [exName, sets] of Object.entries(grouped)) {
+                tbody.innerHTML += `<tr class="exercise-header"><td colspan="4">${exName}</td></tr>`;
+                sets.forEach((w, i) => {
+                    const est1RM = w.reps == 1 ? parseFloat(w.weight).toFixed(1) : (w.weight * (36 / (37 - w.reps))).toFixed(1);
                     tbody.innerHTML += `
                         <tr>
-                            <td class="set-number">Set ${index + 1}</td>
+                            <td class="set-number">Set ${i + 1}</td>
                             <td><input type="number" class="edit-input" value="${w.reps}" onchange="updateWorkout('${w.id}', 'reps', this.value)"></td>
-                            <td>
-                                <input type="number" class="edit-input" value="${w.weight}" onchange="updateWorkout('${w.id}', 'weight', this.value)">
-                                <span class="onerm-badge">1RM: ${est1RM}</span>
-                            </td>
+                            <td><input type="number" class="edit-input" value="${w.weight}" onchange="updateWorkout('${w.id}', 'weight', this.value)"><span class="onerm-badge">1RM: ${est1RM}</span></td>
                             <td><button class="delete-btn" onclick="deleteWorkout('${w.id}')">×</button></td>
                         </tr>
                     `;
@@ -460,45 +321,126 @@
             }
         }
 
-        // --- Log Form Submission ---
+        // --- Interactions ---
         document.getElementById('add-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            workouts.push({
-                id: Date.now().toString() + Math.floor(Math.random() * 1000),
-                date: selectedDateString,
-                exercise: document.getElementById('exercise').value.trim(),
-                reps: document.getElementById('reps').value,
-                weight: document.getElementById('weight').value
-            });
+            workouts.push({ id: Date.now().toString(), date: selectedDateString, exercise: document.getElementById('exercise').value.trim(), reps: document.getElementById('reps').value, weight: document.getElementById('weight').value });
             saveData();
-            
-            const repsInput = document.getElementById('reps');
-            repsInput.focus();
-            repsInput.select();
+            if(autoTimerOn) startTimer(90);
+            const r = document.getElementById('reps'); r.focus(); r.select();
         });
 
-        window.updateWorkout = (id, field, value) => {
-            const index = workouts.findIndex(w => w.id === id);
-            if (index !== -1) {
-                workouts[index][field] = value;
-                localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
-                renderTable(); // Re-render to update 1RM immediately
-            }
-        };
-
+        window.updateWorkout = (id, f, v) => { const idx = workouts.findIndex(w => w.id === id); if(idx !== -1) { workouts[idx][f] = v; saveData(); } };
         window.deleteWorkout = (id) => { workouts = workouts.filter(w => w.id !== id); saveData(); };
+        function saveData() { localStorage.setItem('gymWorkouts', JSON.stringify(workouts)); updateAutocomplete(); renderTable(); renderCalendar(); }
 
-        function saveData() {
-            localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
-            updateAutocomplete();
-            renderTable();
-            renderCalendar();
+        // --- Templates ---
+        function openTemplatesModal() { 
+            const list = document.getElementById('templates-list');
+            list.innerHTML = templates.length === 0 ? '<p style="color:var(--text-light); font-size:0.9rem;">No templates saved.</p>' : '';
+            templates.forEach((t, i) => {
+                list.innerHTML += `
+                    <div class="template-card">
+                        <div>
+                            <strong>${t.name}</strong>
+                            <div style="font-size:0.8rem; color:var(--text-light);">${t.sets.length} total sets</div>
+                        </div>
+                        <div>
+                            <button class="secondary-btn" style="display:inline-block;" onclick="loadTemplate(${i})">Load</button>
+                            <button class="secondary-btn" style="display:inline-block; border-color:var(--danger); color:var(--danger);" onclick="deleteTemplate(${i})">×</button>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('templates-modal').classList.add('show');
+        }
+        function saveTemplate() {
+            const name = document.getElementById('template-name').value.trim();
+            const daily = workouts.filter(w => w.date === selectedDateString);
+            if(!name || daily.length === 0) return alert("Enter a name and ensure today has workouts.");
+            templates.push({ name, sets: daily.map(w => ({ exercise: w.exercise, reps: w.reps, weight: w.weight })) });
+            localStorage.setItem('gymTemplates', JSON.stringify(templates));
+            document.getElementById('template-name').value = '';
+            openTemplatesModal();
+        }
+        function loadTemplate(index) {
+            templates[index].sets.forEach(s => workouts.push({ id: Date.now().toString()+Math.random(), date: selectedDateString, exercise: s.exercise, reps: s.reps, weight: s.weight }));
+            saveData(); closeModals();
+        }
+        function deleteTemplate(index) { templates.splice(index, 1); localStorage.setItem('gymTemplates', JSON.stringify(templates)); openTemplatesModal(); }
+
+        // --- Copy Day ---
+        function openCopyModal() {
+            const sel = document.getElementById('copy-date-select');
+            const dates = [...new Set(workouts.map(w => w.date))].filter(d => d !== selectedDateString).sort((a,b) => new Date(b)-new Date(a));
+            if(dates.length === 0) return alert("No previous workouts.");
+            sel.innerHTML = dates.map(d => `<option value="${d}">${new Date(d.split('-')[0], d.split('-')[1]-1, d.split('-')[2]).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} (${workouts.filter(w=>w.date===d).length} sets)</option>`).join('');
+            document.getElementById('copy-modal').classList.add('show');
+        }
+        function executeCopyWorkout() {
+            const src = document.getElementById('copy-date-select').value;
+            workouts.filter(w => w.date === src).forEach(w => workouts.push({ id: Date.now().toString()+Math.random(), date: selectedDateString, exercise: w.exercise, reps: w.reps, weight: w.weight }));
+            saveData(); closeModals();
         }
 
-        // Initialize
-        updateAutocomplete();
-        renderCalendar();
-        renderTable();
+        // --- Bodyweight ---
+        function saveBodyweight() {
+            const bw = document.getElementById('bw-input').value;
+            if(!bw) return;
+            const idx = bodyweights.findIndex(b => b.date === selectedDateString);
+            if(idx > -1) bodyweights[idx].weight = bw; else bodyweights.push({ date: selectedDateString, weight: bw });
+            localStorage.setItem('gymBw', JSON.stringify(bodyweights));
+            document.getElementById('bw-input').value = ''; renderBwChart();
+        }
+
+        // --- Charts ---
+        let pChart = null, bChart = null;
+        function getChartColors() {
+            const d = document.documentElement.getAttribute('data-theme') === 'dark';
+            return { grid: d ? '#374151' : '#E5E7EB', text: d ? '#9CA3AF' : '#6B7280' };
+        }
+        function renderChart() {
+            const ex = document.getElementById('chart-exercise-select').value;
+            if(pChart) pChart.destroy();
+            if(!ex) return;
+            const hist = workouts.filter(w => w.exercise === ex).sort((a,b) => new Date(a.date)-new Date(b.date));
+            const max = {}; hist.forEach(w => { const est = w.reps == 1 ? parseFloat(w.weight) : w.weight*(36/(37-w.reps)); if(!max[w.date] || est > max[w.date]) max[w.date] = est; });
+            const c = getChartColors();
+            pChart = new Chart(document.getElementById('progressChart'), {
+                type: 'line', data: { labels: Object.keys(max).map(d => new Date(d.split('-')[0], d.split('-')[1]-1, d.split('-')[2]).toLocaleDateString('en-US',{month:'short',day:'numeric'})), datasets: [{ data: Object.values(max), borderColor: '#4F46E5', backgroundColor: 'rgba(79, 70, 229, 0.1)', borderWidth: 3, fill: true, tension: 0.3 }] },
+                options: { plugins: { legend: { display: false } }, scales: { x: { grid: { color: c.grid }, ticks: { color: c.text } }, y: { grid: { color: c.grid }, ticks: { color: c.text } } } }
+            });
+        }
+        function renderBwChart() {
+            if(bChart) bChart.destroy();
+            const hist = [...bodyweights].sort((a,b) => new Date(a.date)-new Date(b.date));
+            const c = getChartColors();
+            bChart = new Chart(document.getElementById('bwChart'), {
+                type: 'line', data: { labels: hist.map(b => new Date(b.date.split('-')[0], b.date.split('-')[1]-1, b.date.split('-')[2]).toLocaleDateString('en-US',{month:'short',day:'numeric'})), datasets: [{ data: hist.map(b => b.weight), borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 3, fill: true, tension: 0.3 }] },
+                options: { plugins: { legend: { display: false } }, scales: { x: { grid: { color: c.grid }, ticks: { color: c.text } }, y: { grid: { color: c.grid }, ticks: { color: c.text } } } }
+            });
+        }
+
+        // --- Timer / Export ---
+        let timerInterval, audioCtx = null;
+        function playBeep() { try { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5); } catch(e){} }
+        function startTimer(sec) {
+            clearInterval(timerInterval); if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+            let t = sec; updateTimerDisplay(t);
+            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active');
+            timerInterval = setInterval(() => {
+                t--; updateTimerDisplay(t);
+                if(t <= 0) { clearInterval(timerInterval); document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active')); playBeep(); document.body.classList.add('flash-screen'); setTimeout(() => document.body.classList.remove('flash-screen'), 3000); }
+            }, 1000);
+        }
+        function stopTimer() { clearInterval(timerInterval); updateTimerDisplay(0); document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active')); }
+        function updateTimerDisplay(sec) { document.getElementById('timer-text').innerText = `${Math.floor(sec/60).toString().padStart(2,'0')}:${(sec%60).toString().padStart(2,'0')}`; }
+        function exportCSV() {
+            let csv = "data:text/csv;charset=utf-8,Date,Exercise,Sets,Reps,Weight\n";
+            [...workouts].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(w => csv += `${w.date},"${w.exercise}",1,${w.reps},${w.weight}\n`);
+            const link = document.createElement("a"); link.setAttribute("href", encodeURI(csv)); link.setAttribute("download", `Gym_Tracker_Backup_${new Date().toISOString().split('T')[0]}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        updateAutocomplete(); renderCalendar(); renderTable();
     </script>
 </body>
 </html>
