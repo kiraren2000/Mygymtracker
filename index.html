@@ -9,31 +9,47 @@
     <title>Gym Tracker</title>
     <style>
         :root { --primary: #4F46E5; --bg: #F3F4F6; --surface: #FFFFFF; --text: #111827; --text-light: #6B7280; --border: #E5E7EB; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg); color: var(--text); overscroll-behavior-y: contain; padding-bottom: env(safe-area-inset-bottom); }
-        header { background-color: var(--primary); color: white; padding: 1.5rem 1rem; text-align: center; font-size: 1.5rem; font-weight: bold; padding-top: max(1.5rem, env(safe-area-inset-top)); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header { background-color: var(--primary); color: white; padding: 1.5rem 1rem; text-align: center; font-size: 1.25rem; font-weight: bold; padding-top: max(1.5rem, env(safe-area-inset-top)); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         main { padding: 1rem; max-width: 600px; margin: 0 auto; }
-        .card { background: var(--surface); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        h2 { font-size: 1.25rem; margin-bottom: 1rem; color: var(--text); }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; }
-        input { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--bg); }
+        .card { background: var(--surface); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text); }
+        
+        /* Search Styles */
+        .search-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        input[type="text"] { flex: 1; }
+        input { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--bg); }
         input:focus { outline: none; border-color: var(--primary); background-color: white; }
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .search-row { display: flex; gap: 0.5rem; }
-        button { width: 100%; padding: 1rem; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
+        button { padding: 0.75rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
         button:active { opacity: 0.9; transform: scale(0.98); }
-        .btn-secondary { background-color: #e5e7eb; color: var(--text); font-size: 0.9rem; padding: 0.75rem; }
-        .workout-list { list-style: none; }
-        .workout-item { padding: 1rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .workout-item:last-child { border-bottom: none; }
-        .workout-details strong { display: block; font-size: 1.1rem; margin-bottom: 0.25rem; }
-        .workout-stats { color: var(--text-light); font-size: 0.9rem; }
-        .workout-date { font-size: 0.8rem; color: var(--text-light); text-align: right; }
-        .delete-btn { background-color: transparent; color: #EF4444; width: auto; padding: 0.5rem; font-size: 1.5rem; }
         .search-result { color: var(--primary); font-weight: 600; cursor: pointer; padding: 0.75rem 0; display: block; border-bottom: 1px solid var(--border); }
-        .instruction-box { background: var(--bg); padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem; line-height: 1.5; }
-        .instruction-box p { margin-bottom: 0.5rem; }
+        .instruction-box { background: var(--bg); padding: 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.9rem; }
+        
+        /* Calendar Styles */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-weight: bold; }
+        .calendar-header button { background: transparent; color: var(--primary); padding: 0.5rem; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+        .day-name { font-size: 0.75rem; color: var(--text-light); font-weight: bold; margin-bottom: 0.5rem; }
+        .calendar-day { padding: 0.6rem 0; border-radius: 8px; cursor: pointer; position: relative; font-size: 0.95rem; }
+        .calendar-day.selected { background-color: var(--primary); color: white; font-weight: bold; }
+        .workout-dot { width: 5px; height: 5px; background-color: #10B981; border-radius: 50%; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); }
+        .calendar-day.selected .workout-dot { background-color: white; }
+        
+        /* Table Styles */
+        .add-form-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr auto; gap: 0.25rem; margin-bottom: 1rem; align-items: end; }
+        .add-form-row input { padding: 0.5rem; font-size: 0.9rem; }
+        .add-form-row label { display: block; font-size: 0.7rem; color: var(--text-light); margin-bottom: 0.2rem; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+        th { font-size: 0.75rem; color: var(--text-light); padding-bottom: 0.5rem; text-align: center; font-weight: 500; }
+        th:first-child { text-align: left; }
+        td { padding: 0.5rem 0; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); }
+        td:first-child { text-align: left; font-weight: 600; font-size: 0.95rem; }
+        
+        .edit-input { width: 45px; padding: 4px; border: 1px solid transparent; background: transparent; text-align: center; font-size: 0.95rem; border-bottom: 1px dashed var(--border); border-radius: 0; }
+        .edit-input:focus { border-bottom: 1px solid var(--primary); background: var(--bg); }
+        .delete-btn { background: transparent; color: #EF4444; padding: 0.25rem 0.5rem; font-size: 1.25rem; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -41,129 +57,118 @@
     <header>🏋️ Gym Tracker</header>
 
     <main>
-        <!-- Exercise Search Section -->
+        <!-- Search Section -->
         <div class="card">
             <h2>Learn an Exercise</h2>
             <div class="search-row">
                 <input type="text" id="search-input" placeholder="e.g., Squat, Bicep">
-                <button onclick="searchOnline()" style="width: 100px;">Search</button>
+                <button onclick="searchOnline()">Search</button>
             </div>
             <div id="search-results"></div>
         </div>
 
-        <!-- Logging Section -->
+        <!-- Calendar Section -->
         <div class="card">
-            <h2>Log a Workout</h2>
-            <form id="workout-form">
-                <div class="form-group">
-                    <label>Exercise Name</label>
-                    <input type="text" id="exercise" required placeholder="e.g., Bench Press">
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>Sets</label>
-                        <input type="number" id="sets" required min="1" placeholder="3">
-                    </div>
-                    <div class="form-group">
-                        <label>Reps</label>
-                        <input type="number" id="reps" required min="1" placeholder="10">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Weight (lbs/kg)</label>
-                    <input type="number" id="weight" step="0.5" required placeholder="135">
-                </div>
-                <button type="submit">Log Workout</button>
-            </form>
+            <div class="calendar-header">
+                <button onclick="changeMonth(-1)">❮</button>
+                <span id="month-year"></span>
+                <button onclick="changeMonth(1)">❯</button>
+            </div>
+            <div class="calendar-grid" id="calendar-grid">
+                <!-- Days populated via JS -->
+            </div>
         </div>
 
-        <!-- History Section -->
+        <!-- Daily Logging & Table Section -->
         <div class="card">
-            <h2>Recent Workouts</h2>
-            <ul id="workout-list" class="workout-list"></ul>
+            <h2 id="selected-date-display">Workouts</h2>
+            
+            <form id="add-form" class="add-form-row">
+                <div>
+                    <label>Exercise</label>
+                    <input type="text" id="exercise" required placeholder="Name">
+                </div>
+                <div>
+                    <label>Sets</label>
+                    <input type="number" id="sets" required min="1" placeholder="#">
+                </div>
+                <div>
+                    <label>Reps</label>
+                    <input type="number" id="reps" required min="1" placeholder="#">
+                </div>
+                <div>
+                    <label>Wt (lbs)</label>
+                    <input type="number" id="weight" step="0.5" required placeholder="Wt">
+                </div>
+                <button type="submit">+</button>
+            </form>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Exercise</th>
+                            <th>Sets</th>
+                            <th>Reps</th>
+                            <th>Weight</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Table rows populated via JS -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
     <script>
-        // Data Management
+        // Data Management & Migration
         let workouts = JSON.parse(localStorage.getItem('gymWorkouts')) || [];
-        const list = document.getElementById('workout-list');
-
-        function renderWorkouts() {
-            list.innerHTML = workouts.length === 0 ? '<div style="text-align:center; color:gray;">No workouts logged yet.</div>' : '';
-            [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(w => {
-                const li = document.createElement('li');
-                li.className = 'workout-item';
-                const dateStr = new Date(w.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                li.innerHTML = `
-                    <div class="workout-details">
-                        <strong>${w.exercise}</strong>
-                        <span class="workout-stats">${w.sets} sets × ${w.reps} reps @ ${w.weight}</span>
-                    </div>
-                    <div style="display:flex; align-items:center;">
-                        <span class="workout-date">${dateStr}</span>
-                        <button class="delete-btn" onclick="deleteWorkout('${w.id}')">×</button>
-                    </div>`;
-                list.appendChild(li);
-            });
-        }
-
-        document.getElementById('workout-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            workouts.push({
-                id: Date.now().toString(),
-                exercise: document.getElementById('exercise').value,
-                sets: document.getElementById('sets').value,
-                reps: document.getElementById('reps').value,
-                weight: document.getElementById('weight').value,
-                date: new Date().toISOString()
-            });
-            localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
-            renderWorkouts();
-            e.target.reset();
-            alert("Workout Logged! ✅");
+        // Convert old timestamp formats (YYYY-MM-DDTHH:MM:SS) to standard calendar dates (YYYY-MM-DD)
+        workouts = workouts.map(w => {
+            if (w.date && w.date.includes('T')) w.date = w.date.split('T')[0];
+            return w;
         });
 
-        window.deleteWorkout = (id) => {
-            if(confirm('Delete this log?')) {
-                workouts = workouts.filter(w => w.id !== id);
-                localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
-                renderWorkouts();
-            }
-        };
+        // Date State
+        let currentDate = new Date();
+        // Adjust for local timezone offset to avoid previous day bugs
+        const tzOffset = currentDate.getTimezoneOffset() * 60000;
+        let selectedDateString = new Date(currentDate - tzOffset).toISOString().split('T')[0];
 
-        // Internet API Search 
+        // Search API Fixed
         async function searchOnline() {
             const query = document.getElementById('search-input').value;
             const resDiv = document.getElementById('search-results');
             if(!query) return;
             
-            resDiv.innerHTML = '<br><p style="color:gray;">Searching...</p>';
+            resDiv.innerHTML = '<p style="color:gray; font-size:0.9rem;">Searching...</p>';
             try {
-                const res = await fetch(`https://wger.de/api/v2/exercise/?search=${encodeURIComponent(query)}&language=2`);
+                const res = await fetch(`https://wger.de/api/v2/exercise/search/?term=${encodeURIComponent(query)}`);
                 const data = await res.json();
                 
-                if(!data.results || data.results.length === 0) {
-                    resDiv.innerHTML = '<br><p style="color:gray;">No exercises found.</p>';
+                if(!data.suggestions || data.suggestions.length === 0) {
+                    resDiv.innerHTML = '<p style="color:gray; font-size:0.9rem;">No exercises found.</p>';
                     return;
                 }
                 
                 resDiv.innerHTML = '';
-                data.results.slice(0, 5).forEach(ex => {
+                data.suggestions.slice(0, 5).forEach(ex => {
                     const span = document.createElement('span');
                     span.className = 'search-result';
-                    span.innerHTML = `🔍 ${ex.name}`;
-                    span.onclick = () => getDetails(ex.id, ex.name);
+                    span.innerHTML = `🔍 ${ex.value}`;
+                    span.onclick = () => getDetails(ex.data.id, ex.value);
                     resDiv.appendChild(span);
                 });
             } catch (err) {
-                resDiv.innerHTML = '<br><p style="color:red;">Error connecting to search.</p>';
+                resDiv.innerHTML = '<p style="color:red; font-size:0.9rem;">Error connecting to search.</p>';
             }
         }
 
         async function getDetails(id, name) {
             const resDiv = document.getElementById('search-results');
-            resDiv.innerHTML = '<br><p style="color:gray;">Loading instructions...</p>';
+            resDiv.innerHTML = '<p style="color:gray; font-size:0.9rem;">Loading instructions...</p>';
             try {
                 const res = await fetch(`https://wger.de/api/v2/exerciseinfo/${id}/`);
                 const data = await res.json();
@@ -173,13 +178,13 @@
                         <h3 style="margin-bottom: 0.5rem; color: var(--primary);">${name}</h3>
                         ${data.description || "No description available."}
                         <div class="search-row" style="margin-top: 1rem;">
-                            <button class="btn-secondary" onclick="document.getElementById('search-results').innerHTML=''">Close</button>
-                            <button class="btn-secondary" style="background: var(--primary); color: white;" onclick="useExercise('${name}')">Log This</button>
+                            <button style="background: #e5e7eb; color: var(--text);" onclick="document.getElementById('search-results').innerHTML=''">Close</button>
+                            <button onclick="useExercise('${name}')">Log This</button>
                         </div>
                     </div>
                 `;
             } catch (err) {
-                resDiv.innerHTML = '<br><p style="color:red;">Error loading details.</p>';
+                resDiv.innerHTML = '<p style="color:red; font-size:0.9rem;">Error loading details.</p>';
             }
         }
 
@@ -189,7 +194,134 @@
             document.getElementById('sets').focus();
         }
 
-        renderWorkouts();
+        // Calendar Logic
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('month-year').innerText = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Weekday Headers
+            ['S','M','T','W','T','F','S'].forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'day-name';
+                el.innerText = d;
+                grid.appendChild(el);
+            });
+
+            // Empty prefix days
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            // Days
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                dayDiv.innerText = i;
+
+                const dayString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                
+                if (dayString === selectedDateString) dayDiv.classList.add('selected');
+
+                if (workouts.some(w => w.date === dayString)) {
+                    const dot = document.createElement('div');
+                    dot.className = 'workout-dot';
+                    dayDiv.appendChild(dot);
+                }
+
+                dayDiv.onclick = () => {
+                    selectedDateString = dayString;
+                    renderCalendar();
+                    renderTable();
+                };
+                grid.appendChild(dayDiv);
+            }
+        }
+
+        function changeMonth(offset) {
+            currentDate.setMonth(currentDate.getMonth() + offset);
+            renderCalendar();
+        }
+
+        // Editable Table Logic
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            // Format UI header string
+            const [y, m, d] = selectedDateString.split('-');
+            const displayDate = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            document.getElementById('selected-date-display').innerText = `Log for ${displayDate}`;
+
+            const dailyWorkouts = workouts.filter(w => w.date === selectedDateString);
+
+            if (dailyWorkouts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:gray; padding: 2rem 0; font-size: 0.9rem;">No workouts logged on this date.</td></tr>';
+                return;
+            }
+
+            dailyWorkouts.forEach(w => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${w.exercise}</td>
+                    <td><input type="number" class="edit-input" value="${w.sets}" onchange="updateWorkout('${w.id}', 'sets', this.value)"></td>
+                    <td><input type="number" class="edit-input" value="${w.reps}" onchange="updateWorkout('${w.id}', 'reps', this.value)"></td>
+                    <td><input type="number" class="edit-input" value="${w.weight}" onchange="updateWorkout('${w.id}', 'weight', this.value)"></td>
+                    <td><button class="delete-btn" onclick="deleteWorkout('${w.id}')">×</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Form Submit
+        document.getElementById('add-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            workouts.push({
+                id: Date.now().toString(),
+                date: selectedDateString,
+                exercise: document.getElementById('exercise').value,
+                sets: document.getElementById('sets').value,
+                reps: document.getElementById('reps').value,
+                weight: document.getElementById('weight').value
+            });
+            saveData();
+            
+            // Clear only number inputs, keep exercise text for rapid entry
+            document.getElementById('sets').value = '';
+            document.getElementById('reps').value = '';
+            document.getElementById('weight').value = '';
+        });
+
+        // Edit existing log
+        window.updateWorkout = (id, field, value) => {
+            const index = workouts.findIndex(w => w.id === id);
+            if (index !== -1) {
+                workouts[index][field] = value;
+                localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
+            }
+        };
+
+        // Delete existing log
+        window.deleteWorkout = (id) => {
+            workouts = workouts.filter(w => w.id !== id);
+            saveData();
+        };
+
+        function saveData() {
+            localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
+            renderTable();
+            renderCalendar();
+        }
+
+        // Initial Load
+        renderCalendar();
+        renderTable();
     </script>
 </body>
 </html>
