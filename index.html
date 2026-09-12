@@ -6,71 +6,90 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gym Tracker">
-    <title>Gym Tracker</title>
+    <title>Gym Tracker Pro</title>
+    <!-- Chart.js for Progress Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #4F46E5; --bg: #F3F4F6; --surface: #FFFFFF; --text: #111827; --text-light: #6B7280; --border: #E5E7EB; }
+        :root { 
+            --primary: #4F46E5; --bg: #F3F4F6; --surface: #FFFFFF; 
+            --text: #111827; --text-light: #6B7280; --border: #E5E7EB; 
+            --danger: #EF4444; --success: #10B981;
+        }
+        [data-theme="dark"] {
+            --primary: #6366F1; --bg: #111827; --surface: #1F2937; 
+            --text: #F9FAFB; --text-light: #9CA3AF; --border: #374151;
+        }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); overscroll-behavior-y: contain; padding-bottom: env(safe-area-inset-bottom); }
-        header { background-color: var(--primary); color: white; padding: 1.5rem 1rem; text-align: center; font-size: 1.25rem; font-weight: bold; padding-top: max(1.5rem, env(safe-area-inset-top)); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        body { background-color: var(--bg); color: var(--text); overscroll-behavior-y: contain; padding-bottom: 80px; transition: background-color 0.3s, color 0.3s; }
+        
+        header { background-color: var(--primary); color: white; padding: max(1.5rem, env(safe-area-inset-top)) 1rem 1rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header-title { font-size: 1.25rem; font-weight: bold; }
+        .icon-btn { background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0.2rem; }
+        
         main { padding: 1rem; max-width: 600px; margin: 0 auto; }
-        .card { background: var(--surface); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text); }
+        .card { background: var(--surface); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: background-color 0.3s; }
+        h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
         
-        /* Search & YouTube Link Styles */
-        .search-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
-        input[type="text"] { flex: 1; }
-        input { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--bg); }
-        input:focus { outline: none; border-color: var(--primary); background-color: white; }
-        button { padding: 0.75rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
-        button:active { opacity: 0.9; transform: scale(0.98); }
-        .yt-link { display: block; padding: 0.75rem; background-color: #FF0000; color: white; text-decoration: none; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 0.5rem; font-size: 0.95rem; }
-        .instruction-box { background: var(--bg); padding: 1rem; border-radius: 8px; margin-top: 0.5rem; }
+        input { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--bg); color: var(--text); width: 100%; transition: background-color 0.3s, color 0.3s; }
+        input:focus { outline: none; border-color: var(--primary); }
+        button.primary-btn { padding: 0.75rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; }
+        button.secondary-btn { padding: 0.5rem; background-color: var(--border); color: var(--text); border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer; }
         
-        /* Calendar Styles */
+        /* Calendar */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-weight: bold; }
-        .calendar-header button { background: transparent; color: var(--primary); padding: 0.5rem; }
+        .calendar-header button { background: transparent; color: var(--primary); padding: 0.5rem; border: none; font-size: 1.2rem; cursor: pointer; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
         .day-name { font-size: 0.75rem; color: var(--text-light); font-weight: bold; margin-bottom: 0.5rem; }
         .calendar-day { padding: 0.6rem 0; border-radius: 8px; cursor: pointer; position: relative; font-size: 0.95rem; }
         .calendar-day.selected { background-color: var(--primary); color: white; font-weight: bold; }
-        .workout-dot { width: 5px; height: 5px; background-color: #10B981; border-radius: 50%; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); }
+        .workout-dot { width: 5px; height: 5px; background-color: var(--success); border-radius: 50%; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); }
         .calendar-day.selected .workout-dot { background-color: white; }
         
-        /* Fixed 2-Row Form Styles (Set-by-Set Logging) */
+        /* Form & Table */
         .form-row-1 { margin-bottom: 0.5rem; }
-        .form-row-1 input { width: 100%; font-weight: bold; }
         .form-row-2 { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: center; }
-        .form-row-2 input { width: 100%; padding: 0.75rem 0.5rem; text-align: center; }
-        .add-btn { padding: 0.75rem 1.25rem; font-size: 1.1rem; font-weight: bold; width: 100%; }
-
-        /* Grouped Table Styles */
+        .form-row-2 input { text-align: center; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; table-layout: fixed; }
         th { font-size: 0.75rem; color: var(--text-light); padding-bottom: 0.5rem; text-align: center; font-weight: 500; }
         td { padding: 0.5rem 0; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
-        
-        .exercise-header td { text-align: left; font-weight: bold; background-color: #F3F4F6; padding: 0.5rem; border-radius: 6px; color: var(--primary); border-bottom: none; font-size: 1rem; }
+        .exercise-header td { text-align: left; font-weight: bold; background-color: var(--bg); padding: 0.5rem; border-radius: 6px; color: var(--primary); border-bottom: none; font-size: 1rem; }
         .set-number { color: var(--text-light); font-weight: 500; font-size: 0.85rem; }
-        
-        .edit-input { width: 100%; padding: 4px 0; border: 1px solid transparent; background: transparent; text-align: center; font-size: 0.95rem; border-bottom: 1px dashed var(--border); border-radius: 0; }
+        .edit-input { width: 100%; padding: 4px 0; border: 1px dashed transparent; background: transparent; text-align: center; }
         .edit-input:focus { border-bottom: 1px solid var(--primary); background: var(--bg); }
-        .delete-btn { background: transparent; color: #EF4444; padding: 0.25rem; font-size: 1.25rem; font-weight: bold; width: 100%; text-align: center; }
+        .delete-btn { background: transparent; color: var(--danger); padding: 0.25rem; border: none; font-size: 1.25rem; font-weight: bold; width: 100%; cursor: pointer;}
+        
+        .onerm-badge { display: block; font-size: 0.65rem; color: var(--success); font-weight: bold; margin-top: 2px; }
+
+        /* Floating Rest Timer */
+        .timer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); padding: max(1rem, env(safe-area-inset-bottom)) 1rem 1rem; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; z-index: 50; transition: background-color 0.3s; }
+        .timer-display { font-size: 1.5rem; font-weight: bold; color: var(--primary); font-variant-numeric: tabular-nums; }
+        .timer-controls { display: flex; gap: 0.5rem; }
+        .timer-btn { padding: 0.5rem 1rem; background: var(--bg); color: var(--text); border: none; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .timer-btn.active { background: var(--primary); color: white; }
+
+        /* Modal Settings/Stats */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(3px); }
+        .modal.show { display: flex; }
+        .modal-content { background: var(--surface); padding: 1.5rem; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: bold; }
+        
+        .flash-screen { animation: flashBg 1s 3; }
+        @keyframes flashBg { 0% { background-color: var(--success); } 100% { background-color: var(--bg); } }
     </style>
 </head>
 <body>
 
-    <header>🏋️ Gym Tracker</header>
+    <header>
+        <div class="header-title">🏋️ Gym Tracker Pro</div>
+        <div>
+            <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+            <button class="icon-btn" onclick="openModal()">⚙️</button>
+        </div>
+    </header>
 
     <main>
-        <!-- YouTube Search Section -->
-        <div class="card">
-            <h2>Learn an Exercise</h2>
-            <div class="search-row">
-                <input type="text" id="search-input" placeholder="e.g., Goblet Squat">
-                <button onclick="generateVideos()">Find Videos</button>
-            </div>
-            <div id="search-results"></div>
-        </div>
-
         <!-- Calendar Section -->
         <div class="card">
             <div class="calendar-header">
@@ -81,18 +100,22 @@
             <div class="calendar-grid" id="calendar-grid"></div>
         </div>
 
-        <!-- Set-by-Set Logging Form & Grouped Table -->
+        <!-- Logging Form & Table -->
         <div class="card">
-            <h2 id="selected-date-display">Workouts</h2>
+            <h2>
+                <span id="selected-date-display">Workouts</span>
+                <button class="secondary-btn" onclick="copyPreviousWorkout()">📋 Copy Last</button>
+            </h2>
             
             <form id="add-form">
                 <div class="form-row-1">
-                    <input type="text" id="exercise" required placeholder="Exercise (e.g., Bench Press)">
+                    <input type="text" id="exercise" required placeholder="Exercise (e.g., Bench Press)" list="exercise-history" autocomplete="off">
+                    <datalist id="exercise-history"></datalist>
                 </div>
                 <div class="form-row-2">
                     <input type="number" id="reps" required min="1" placeholder="Reps">
                     <input type="number" id="weight" step="0.5" required placeholder="Lbs/Kg">
-                    <button type="submit" class="add-btn">+ Set</button>
+                    <button type="submit" class="primary-btn">+ Set</button>
                 </div>
             </form>
 
@@ -100,7 +123,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 25%;">Set</th>
+                            <th style="width: 20%;">Set</th>
                             <th>Reps</th>
                             <th>Weight</th>
                             <th style="width: 15%;"></th>
@@ -112,67 +135,252 @@
         </div>
     </main>
 
-    <script>
-        // Data Management & Format Migration
-        let rawWorkouts = JSON.parse(localStorage.getItem('gymWorkouts')) || [];
-        let workouts = [];
-        let needsSave = false;
+    <!-- Floating Rest Timer -->
+    <div class="timer-bar">
+        <div class="timer-display" id="timer-text">00:00</div>
+        <div class="timer-controls">
+            <button class="timer-btn" onclick="startTimer(60)">1m</button>
+            <button class="timer-btn" onclick="startTimer(120)">2m</button>
+            <button class="timer-btn" onclick="startTimer(180)">3m</button>
+            <button class="timer-btn" onclick="stopTimer()" style="color: var(--danger);">Stop</button>
+        </div>
+    </div>
 
-        // Automatically convert old "3 sets" entries into 3 individual set entries
-        rawWorkouts.forEach(w => {
-            if (w.date && w.date.includes('T')) w.date = w.date.split('T')[0];
+    <!-- Settings & Stats Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Settings & Stats
+                <button class="icon-btn" style="color: var(--text);" onclick="closeModal()">✕</button>
+            </div>
             
-            if (w.sets && parseInt(w.sets) > 0) {
-                needsSave = true;
-                for(let i = 0; i < parseInt(w.sets); i++) {
-                    workouts.push({
-                        id: w.id + '-' + i,
-                        date: w.date,
-                        exercise: w.exercise,
-                        reps: w.reps,
-                        weight: w.weight
-                    });
-                }
-            } else {
-                workouts.push(w);
-            }
-        });
+            <button class="primary-btn" onclick="exportCSV()" style="margin-bottom: 2rem;">💾 Export Data to CSV</button>
 
-        if (needsSave) {
-            localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
-        }
+            <h3 style="margin-bottom: 1rem;">📊 Strength Progress</h3>
+            <select id="chart-exercise-select" onchange="renderChart()" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border-radius: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
+                <option value="">Select an exercise...</option>
+            </select>
+            <canvas id="progressChart" width="100" height="60"></canvas>
+        </div>
+    </div>
 
-        // Date State
+    <script>
+        // --- Core Data Management ---
+        let workouts = JSON.parse(localStorage.getItem('gymWorkouts')) || [];
         let currentDate = new Date();
         const tzOffset = currentDate.getTimezoneOffset() * 60000;
         let selectedDateString = new Date(currentDate - tzOffset).toISOString().split('T')[0];
 
-        // YouTube Smart Links
-        function generateVideos() {
-            const query = document.getElementById('search-input').value.trim();
-            const resDiv = document.getElementById('search-results');
-            if(!query) return;
-            
-            const encoded = encodeURIComponent(query);
-            
-            resDiv.innerHTML = `
-                <div class="instruction-box">
-                    <h3 style="margin-bottom: 0.5rem; color: var(--primary);">${query}</h3>
-                    <p style="margin-bottom: 1rem; color: var(--text-light); font-size: 0.85rem;">Tap below to open the YouTube app:</p>
-                    <a href="https://www.youtube.com/results?search_query=${encoded}+form+tutorial+shorts" target="_blank" class="yt-link">📱 Watch Shorts Tutorial</a>
-                    <a href="https://www.youtube.com/results?search_query=${encoded}+form+guide" target="_blank" class="yt-link" style="background-color: #111827;">🎥 Full Form Guide</a>
-                    <button onclick="useExercise('${query.replace(/'/g, "\\'")}')" style="width: 100%; margin-top: 0.5rem;">Log This Exercise Below</button>
-                </div>
-            `;
+        // --- Theme Engine ---
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const target = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', target);
+            localStorage.setItem('theme', target);
+            renderChart(); // Redraw chart for new colors
         }
 
-        function useExercise(name) {
-            document.getElementById('exercise').value = name;
-            document.getElementById('search-results').innerHTML = '';
-            document.getElementById('reps').focus();
+        // --- Smart Autocomplete ---
+        function updateAutocomplete() {
+            const historyList = document.getElementById('exercise-history');
+            const chartSelect = document.getElementById('chart-exercise-select');
+            
+            // Get unique exercises sorted alphabetically
+            const uniqueExercises = [...new Set(workouts.map(w => w.exercise.trim()))].sort();
+            
+            historyList.innerHTML = uniqueExercises.map(ex => `<option value="${ex}">`).join('');
+            
+            // Keep chart selection intact if possible
+            const currentSelection = chartSelect.value;
+            chartSelect.innerHTML = '<option value="">Select an exercise to graph...</option>' + 
+                uniqueExercises.map(ex => `<option value="${ex}">${ex}</option>`).join('');
+            if (uniqueExercises.includes(currentSelection)) chartSelect.value = currentSelection;
         }
 
-        // Calendar Logic
+        // --- Copy Previous Workout ---
+        function copyPreviousWorkout() {
+            // Find all dates before the currently selected date that have workouts
+            const pastDates = [...new Set(workouts.map(w => w.date))]
+                .filter(d => d < selectedDateString)
+                .sort((a, b) => new Date(b) - new Date(a));
+
+            if (pastDates.length === 0) {
+                alert("No previous workouts found to copy.");
+                return;
+            }
+
+            const lastDate = pastDates[0];
+            const previousWorkouts = workouts.filter(w => w.date === lastDate);
+
+            if (confirm(`Copy ${previousWorkouts.length} sets from ${lastDate}?`)) {
+                previousWorkouts.forEach(w => {
+                    workouts.push({
+                        id: Date.now().toString() + Math.floor(Math.random() * 1000),
+                        date: selectedDateString,
+                        exercise: w.exercise,
+                        reps: w.reps,
+                        weight: w.weight
+                    });
+                });
+                saveData();
+            }
+        }
+
+        // --- Export CSV ---
+        function exportCSV() {
+            if (workouts.length === 0) return alert("No data to export.");
+            
+            let csvContent = "data:text/csv;charset=utf-8,Date,Exercise,Sets,Reps,Weight\n";
+            
+            // Group and format for standard spreadsheet reading
+            workouts.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(w => {
+                csvContent += `${w.date},"${w.exercise}",1,${w.reps},${w.weight}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Gym_Tracker_Backup_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- 1 Rep Max Calculator (Brzycki Formula) ---
+        function calculate1RM(reps, weight) {
+            const r = parseInt(reps);
+            const w = parseFloat(weight);
+            if (r === 1) return w.toFixed(1);
+            if (r > 36) return 0; // Formula breaks down at high reps
+            return (w * (36 / (37 - r))).toFixed(1);
+        }
+
+        // --- Timer & Audio Synthesizer ---
+        let timerInterval;
+        let audioCtx = null;
+
+        function playBeep() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } catch(e) { console.log("Audio not supported"); }
+        }
+
+        function startTimer(seconds) {
+            clearInterval(timerInterval);
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            
+            let timeLeft = seconds;
+            updateTimerDisplay(timeLeft);
+            
+            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay(timeLeft);
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+                    playBeep();
+                    // Visual haptic substitute
+                    document.body.classList.add('flash-screen');
+                    setTimeout(() => document.body.classList.remove('flash-screen'), 3000);
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            updateTimerDisplay(0);
+            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+        }
+
+        function updateTimerDisplay(totalSeconds) {
+            const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+            const s = (totalSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer-text').innerText = `${m}:${s}`;
+        }
+
+        // --- Chart.js Progress Graph ---
+        let progressChart = null;
+
+        function renderChart() {
+            const exercise = document.getElementById('chart-exercise-select').value;
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            
+            if (progressChart) progressChart.destroy();
+            if (!exercise) return;
+
+            // Get all instances of this exercise, sorted chronologically
+            const history = workouts
+                .filter(w => w.exercise === exercise)
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            // Map highest Estimated 1RM per day
+            const dailyMax = {};
+            history.forEach(w => {
+                const est1RM = parseFloat(calculate1RM(w.reps, w.weight));
+                if (!dailyMax[w.date] || est1RM > dailyMax[w.date]) {
+                    dailyMax[w.date] = est1RM;
+                }
+            });
+
+            const labels = Object.keys(dailyMax).map(d => new Date(d).toLocaleDateString('en-US', {month:'short', day:'numeric'}));
+            const data = Object.values(dailyMax);
+            
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const gridColor = isDark ? '#374151' : '#E5E7EB';
+            const textColor = isDark ? '#9CA3AF' : '#6B7280';
+
+            progressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Estimated 1RM',
+                        data: data,
+                        borderColor: '#4F46E5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#4F46E5',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+        }
+
+        // --- Modal Control ---
+        function openModal() {
+            updateAutocomplete();
+            document.getElementById('settings-modal').classList.add('show');
+        }
+        function closeModal() {
+            document.getElementById('settings-modal').classList.remove('show');
+        }
+
+        // --- Calendar Logic ---
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
@@ -185,15 +393,10 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
             ['S','M','T','W','T','F','S'].forEach(d => {
-                const el = document.createElement('div');
-                el.className = 'day-name';
-                el.innerText = d;
-                grid.appendChild(el);
+                const el = document.createElement('div'); el.className = 'day-name'; el.innerText = d; grid.appendChild(el);
             });
 
-            for (let i = 0; i < firstDay; i++) {
-                grid.appendChild(document.createElement('div'));
-            }
+            for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
 
             for (let i = 1; i <= daysInMonth; i++) {
                 const dayDiv = document.createElement('div');
@@ -203,28 +406,18 @@
                 const dayString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 
                 if (dayString === selectedDateString) dayDiv.classList.add('selected');
-
                 if (workouts.some(w => w.date === dayString)) {
-                    const dot = document.createElement('div');
-                    dot.className = 'workout-dot';
-                    dayDiv.appendChild(dot);
+                    const dot = document.createElement('div'); dot.className = 'workout-dot'; dayDiv.appendChild(dot);
                 }
 
-                dayDiv.onclick = () => {
-                    selectedDateString = dayString;
-                    renderCalendar();
-                    renderTable();
-                };
+                dayDiv.onclick = () => { selectedDateString = dayString; renderCalendar(); renderTable(); };
                 grid.appendChild(dayDiv);
             }
         }
 
-        function changeMonth(offset) {
-            currentDate.setMonth(currentDate.getMonth() + offset);
-            renderCalendar();
-        }
+        function changeMonth(offset) { currentDate.setMonth(currentDate.getMonth() + offset); renderCalendar(); }
 
-        // Grouped Editable Table Logic
+        // --- Grouped Editable Table Logic ---
         function renderTable() {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
@@ -236,11 +429,10 @@
             const dailyWorkouts = workouts.filter(w => w.date === selectedDateString);
 
             if (dailyWorkouts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:gray; padding: 2rem 0; font-size: 0.9rem;">No sets logged on this date.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-light); padding: 2rem 0;">No sets logged on this date.</td></tr>';
                 return;
             }
 
-            // Group sets by Exercise Name
             const groupedWorkouts = {};
             dailyWorkouts.forEach(w => {
                 const name = w.exercise.trim();
@@ -249,20 +441,18 @@
             });
 
             for (const [exerciseName, sets] of Object.entries(groupedWorkouts)) {
-                // Render Exercise Header Row
-                tbody.innerHTML += `
-                    <tr class="exercise-header">
-                        <td colspan="4">${exerciseName}</td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr class="exercise-header"><td colspan="4">${exerciseName}</td></tr>`;
                 
-                // Render Set Rows under the header
                 sets.forEach((w, index) => {
+                    const est1RM = calculate1RM(w.reps, w.weight);
                     tbody.innerHTML += `
                         <tr>
                             <td class="set-number">Set ${index + 1}</td>
                             <td><input type="number" class="edit-input" value="${w.reps}" onchange="updateWorkout('${w.id}', 'reps', this.value)"></td>
-                            <td><input type="number" class="edit-input" value="${w.weight}" onchange="updateWorkout('${w.id}', 'weight', this.value)"></td>
+                            <td>
+                                <input type="number" class="edit-input" value="${w.weight}" onchange="updateWorkout('${w.id}', 'weight', this.value)">
+                                <span class="onerm-badge">1RM: ${est1RM}</span>
+                            </td>
                             <td><button class="delete-btn" onclick="deleteWorkout('${w.id}')">×</button></td>
                         </tr>
                     `;
@@ -270,19 +460,18 @@
             }
         }
 
-        // Log a Single Set
+        // --- Log Form Submission ---
         document.getElementById('add-form').addEventListener('submit', (e) => {
             e.preventDefault();
             workouts.push({
-                id: Date.now().toString() + Math.floor(Math.random() * 1000), // Ensure unique ID
+                id: Date.now().toString() + Math.floor(Math.random() * 1000),
                 date: selectedDateString,
-                exercise: document.getElementById('exercise').value,
+                exercise: document.getElementById('exercise').value.trim(),
                 reps: document.getElementById('reps').value,
                 weight: document.getElementById('weight').value
             });
             saveData();
             
-            // Keep the exercise and weight filled in, just select the reps so you can easily type the next set
             const repsInput = document.getElementById('reps');
             repsInput.focus();
             repsInput.select();
@@ -293,24 +482,23 @@
             if (index !== -1) {
                 workouts[index][field] = value;
                 localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
+                renderTable(); // Re-render to update 1RM immediately
             }
         };
 
-        window.deleteWorkout = (id) => {
-            workouts = workouts.filter(w => w.id !== id);
-            saveData();
-        };
+        window.deleteWorkout = (id) => { workouts = workouts.filter(w => w.id !== id); saveData(); };
 
         function saveData() {
             localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
+            updateAutocomplete();
             renderTable();
             renderCalendar();
         }
 
-        // Initial Load
+        // Initialize
+        updateAutocomplete();
         renderCalendar();
         renderTable();
     </script>
 </body>
 </html>
-
