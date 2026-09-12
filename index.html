@@ -1,4 +1,4 @@
-l<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -254,10 +254,15 @@ l<!DOCTYPE html>
         const tzOffset = currentDate.getTimezoneOffset() * 60000;
         let selectedDateString = new Date(currentDate - tzOffset).toISOString().split('T')[0];
         
-        document.getElementById('auto-timer-select').value = autoTimerDuration;
+        const autoTimerSelect = document.getElementById('auto-timer-select');
+        if (autoTimerSelect) autoTimerSelect.value = autoTimerDuration;
+
         function updateAutoTimer() {
-            autoTimerDuration = parseInt(document.getElementById('auto-timer-select').value);
-            localStorage.setItem('gymAutoTimer', autoTimerDuration);
+            const sel = document.getElementById('auto-timer-select');
+            if (sel) {
+                autoTimerDuration = parseInt(sel.value);
+                localStorage.setItem('gymAutoTimer', autoTimerDuration);
+            }
         }
 
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -273,8 +278,9 @@ l<!DOCTYPE html>
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('tab-' + tabId).classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
+            const target = document.getElementById('tab-' + tabId);
+            if (target) target.classList.add('active');
             if(tabId === 'stats') renderChart();
             if(tabId === 'bodyweight') renderBwChart();
         }
@@ -287,9 +293,12 @@ l<!DOCTYPE html>
         }
 
         function updateAutocomplete() {
+            const historyEl = document.getElementById('exercise-history');
+            if (!historyEl) return;
             const exList = [...new Set(workouts.map(w => w.exercise.trim()))].sort();
-            document.getElementById('exercise-history').innerHTML = exList.map(ex => `<option value="${ex}">`).join('');
+            historyEl.innerHTML = exList.map(ex => `<option value="${ex}">`).join('');
             const sel = document.getElementById('chart-exercise-select');
+            if (!sel) return;
             const cur = sel.value;
             sel.innerHTML = '<option value="">Select an exercise to graph...</option>' + exList.map(ex => `<option value="${ex}">${ex}</option>`).join('');
             if (exList.includes(cur)) sel.value = cur;
@@ -297,6 +306,7 @@ l<!DOCTYPE html>
 
         function updateExportDropdown() {
             const sel = document.getElementById('export-date-select');
+            if (!sel) return;
             const dates = [...new Set(workouts.map(w => w.date))].sort((a,b) => new Date(b)-new Date(a));
             if(dates.length === 0) {
                 sel.innerHTML = '<option value="">No workouts available</option>';
@@ -306,9 +316,13 @@ l<!DOCTYPE html>
         }
 
         function renderCalendar() {
-            const grid = document.getElementById('calendar-grid'); grid.innerHTML = '';
+            const grid = document.getElementById('calendar-grid'); 
+            if (!grid) return;
+            grid.innerHTML = '';
             const y = currentDate.getFullYear(), m = currentDate.getMonth();
-            document.getElementById('month-year').innerText = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            const monthYearEl = document.getElementById('month-year');
+            if (monthYearEl) monthYearEl.innerText = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
             ['S','M','T','W','T','F','S'].forEach(d => {
                 const el = document.createElement('div'); el.className = 'day-name'; el.innerText = d; grid.appendChild(el);
             });
@@ -325,14 +339,18 @@ l<!DOCTYPE html>
         function changeMonth(offset) { currentDate.setMonth(currentDate.getMonth() + offset); renderCalendar(); }
 
         function renderTable() {
-            const tbody = document.getElementById('table-body'); tbody.innerHTML = '';
+            const tbody = document.getElementById('table-body'); 
+            if (!tbody) return;
+            tbody.innerHTML = '';
             const [y, m, d] = selectedDateString.split('-');
-            document.getElementById('selected-date-display').innerText = `Log for ${new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`;
+            const dateDisp = document.getElementById('selected-date-display');
+            if (dateDisp) dateDisp.innerText = `Log for ${new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`;
             
             const dailyWorkouts = workouts.filter(w => w.date === selectedDateString);
             
             const vol = dailyWorkouts.reduce((sum, w) => sum + (parseFloat(w.reps) * parseFloat(w.weight)), 0);
-            document.getElementById('daily-volume').innerText = vol.toLocaleString() + ' lbs/kg';
+            const volBadge = document.getElementById('daily-volume');
+            if (volBadge) volBadge.innerText = vol.toLocaleString() + ' lbs/kg';
 
             if (dailyWorkouts.length === 0) return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-light); padding: 2rem 0;">No sets logged.</td></tr>';
             
@@ -355,13 +373,17 @@ l<!DOCTYPE html>
             }
         }
 
-        document.getElementById('add-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            workouts.push({ id: Date.now().toString(), date: selectedDateString, exercise: document.getElementById('exercise').value.trim(), reps: document.getElementById('reps').value, weight: document.getElementById('weight').value });
-            saveData();
-            if(autoTimerDuration > 0) startTimer(autoTimerDuration);
-            const r = document.getElementById('reps'); r.focus(); r.select();
-        });
+        const addForm = document.getElementById('add-form');
+        if (addForm) {
+            addForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                workouts.push({ id: Date.now().toString(), date: selectedDateString, exercise: document.getElementById('exercise').value.trim(), reps: document.getElementById('reps').value, weight: document.getElementById('weight').value });
+                saveData();
+                if(autoTimerDuration > 0) startTimer(autoTimerDuration);
+                const r = document.getElementById('reps'); 
+                if (r) { r.focus(); r.select(); }
+            });
+        }
 
         window.updateWorkout = (id, f, v) => { const idx = workouts.findIndex(w => w.id === id); if(idx !== -1) { workouts[idx][f] = v; saveData(); } };
         window.deleteWorkout = (id) => { workouts = workouts.filter(w => w.id !== id); saveData(); };
@@ -369,6 +391,7 @@ l<!DOCTYPE html>
 
         function openTemplatesModal() { 
             const list = document.getElementById('templates-list');
+            if (!list) return;
             list.innerHTML = templates.length === 0 ? '<p style="color:var(--text-light); font-size:0.9rem;">No templates saved.</p>' : '';
             templates.forEach((t, i) => {
                 list.innerHTML += `
@@ -386,12 +409,14 @@ l<!DOCTYPE html>
             document.getElementById('templates-modal').classList.add('show');
         }
         function saveTemplate() {
-            const name = document.getElementById('template-name').value.trim();
+            const nameEl = document.getElementById('template-name');
+            if (!nameEl) return;
+            const name = nameEl.value.trim();
             const daily = workouts.filter(w => w.date === selectedDateString);
             if(!name || daily.length === 0) return alert("Enter a name and ensure today has workouts.");
             templates.push({ name, sets: daily.map(w => ({ exercise: w.exercise, reps: w.reps, weight: w.weight })) });
             localStorage.setItem('gymTemplates', JSON.stringify(templates));
-            document.getElementById('template-name').value = '';
+            nameEl.value = '';
             openTemplatesModal();
         }
         function loadTemplate(index) {
@@ -402,24 +427,29 @@ l<!DOCTYPE html>
 
         function openCopyModal() {
             const sel = document.getElementById('copy-date-select');
+            if (!sel) return;
             const dates = [...new Set(workouts.map(w => w.date))].filter(d => d !== selectedDateString).sort((a,b) => new Date(b)-new Date(a));
             if(dates.length === 0) return alert("No previous workouts.");
             sel.innerHTML = dates.map(d => `<option value="${d}">${new Date(d.split('-')[0], d.split('-')[1]-1, d.split('-')[2]).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} (${workouts.filter(w=>w.date===d).length} sets)</option>`).join('');
             document.getElementById('copy-modal').classList.add('show');
         }
         function executeCopyWorkout() {
-            const src = document.getElementById('copy-date-select'].value;
+            const sel = document.getElementById('copy-date-select');
+            if (!sel) return;
+            const src = sel.value;
             workouts.filter(w => w.date === src).forEach(w => workouts.push({ id: Date.now().toString()+Math.random(), date: selectedDateString, exercise: w.exercise, reps: w.reps, weight: w.weight }));
             saveData(); closeModals();
         }
 
         function saveBodyweight() {
-            const bw = document.getElementById('bw-input').value;
+            const bwEl = document.getElementById('bw-input');
+            if (!bwEl) return;
+            const bw = bwEl.value;
             if(!bw) return;
             const idx = bodyweights.findIndex(b => b.date === selectedDateString);
             if(idx > -1) bodyweights[idx].weight = bw; else bodyweights.push({ date: selectedDateString, weight: bw });
             localStorage.setItem('gymBw', JSON.stringify(bodyweights));
-            document.getElementById('bw-input').value = ''; renderBwChart();
+            bwEl.value = ''; renderBwChart();
         }
 
         let pChart = null, bChart = null;
@@ -428,22 +458,28 @@ l<!DOCTYPE html>
             return { grid: d ? '#374151' : '#E5E7EB', text: d ? '#9CA3AF' : '#6B7280' };
         }
         function renderChart() {
-            const ex = document.getElementById('chart-exercise-select').value;
+            const sel = document.getElementById('chart-exercise-select');
+            if (!sel) return;
+            const ex = sel.value;
+            const canvas = document.getElementById('progressChart');
+            if (!canvas) return;
             if(pChart) pChart.destroy();
             if(!ex) return;
             const hist = workouts.filter(w => w.exercise === ex).sort((a,b) => new Date(a.date)-new Date(b.date));
             const max = {}; hist.forEach(w => { const est = w.reps == 1 ? parseFloat(w.weight) : w.weight*(36/(37-w.reps)); if(!max[w.date] || est > max[w.date]) max[w.date] = est; });
             const c = getChartColors();
-            pChart = new Chart(document.getElementById('progressChart'), {
+            pChart = new Chart(canvas, {
                 type: 'line', data: { labels: Object.keys(max).map(d => new Date(d.split('-')[0], d.split('-')[1]-1, d.split('-')[2]).toLocaleDateString('en-US',{month:'short',day:'numeric'})), datasets: [{ data: Object.values(max), borderColor: '#4F46E5', backgroundColor: 'rgba(79, 70, 229, 0.1)', borderWidth: 3, fill: true, tension: 0.3 }] },
                 options: { plugins: { legend: { display: false } }, scales: { x: { grid: { color: c.grid }, ticks: { color: c.text } }, y: { grid: { color: c.grid }, ticks: { color: c.text } } } }
             });
         }
         function renderBwChart() {
+            const canvas = document.getElementById('bwChart');
+            if (!canvas) return;
             if(bChart) bChart.destroy();
             const hist = [...bodyweights].sort((a,b) => new Date(a.date)-new Date(b.date));
             const c = getChartColors();
-            bChart = new Chart(document.getElementById('bwChart'), {
+            bChart = new Chart(canvas, {
                 type: 'line', data: { labels: hist.map(b => new Date(b.date.split('-')[0], b.date.split('-')[1]-1, b.date.split('-')[2]).toLocaleDateString('en-US',{month:'short',day:'numeric'})), datasets: [{ data: hist.map(b => b.weight), borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 3, fill: true, tension: 0.3 }] },
                 options: { plugins: { legend: { display: false } }, scales: { x: { grid: { color: c.grid }, ticks: { color: c.text } }, y: { grid: { color: c.grid }, ticks: { color: c.text } } } }
             });
@@ -456,7 +492,6 @@ l<!DOCTYPE html>
             const dayWorkouts = workouts.filter(w => w.date === targetDate);
             if(dayWorkouts.length === 0) return alert("No workouts found for this date.");
             
-            // Format: date~exercise~reps~weight;exercise~reps~weight
             const compact = dayWorkouts.map(w => `${w.exercise}~${w.reps}~${w.weight}`).join(';');
             document.getElementById('data-sync-box').value = `${targetDate}|${compact}`;
             alert("Single day code generated!");
@@ -471,7 +506,6 @@ l<!DOCTYPE html>
                 const targetDate = parts[0];
                 const setsData = parts[1].split(';');
                 
-                // Remove existing sets for this date to avoid duplicates, then add imported sets
                 workouts = workouts.filter(w => w.date !== targetDate);
                 
                 setsData.forEach(item => {
