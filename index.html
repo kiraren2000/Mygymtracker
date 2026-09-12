@@ -30,8 +30,8 @@
         .card { background: var(--surface); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: background-color 0.3s; }
         h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
         
-        input, select { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--bg); color: var(--text); width: 100%; }
-        input:focus, select:focus { outline: none; border-color: var(--primary); }
+        input, select, textarea { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--bg); color: var(--text); width: 100%; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
         button.primary-btn { padding: 0.75rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; }
         button.secondary-btn { padding: 0.5rem; background-color: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
         
@@ -228,13 +228,22 @@
                         <option value="180">180 Seconds</option>
                     </select>
                 </label>
+
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem;">Transfer Data Between Safari & Home Screen</h3>
+                    <textarea id="data-sync-box" rows="3" placeholder="Export/Import code..." style="font-size: 0.8rem; margin-bottom: 0.5rem;"></textarea>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="secondary-btn" style="flex:1; justify-content:center;" onclick="exportDataCode()">Generate Code</button>
+                        <button class="secondary-btn" style="flex:1; justify-content:center;" onclick="importDataCode()">Load Code</button>
+                    </div>
+                </div>
+
                 <button class="secondary-btn" style="width: 100%; margin-top: 1.5rem; justify-content: center;" onclick="exportCSV()">💾 Export All Data (CSV)</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- State Management ---
         let workouts = JSON.parse(localStorage.getItem('gymWorkouts')) || [];
         let templates = JSON.parse(localStorage.getItem('gymTemplates')) || [];
         let bodyweights = JSON.parse(localStorage.getItem('gymBw')) || [];
@@ -259,7 +268,6 @@
             renderChart(); renderBwChart();
         }
 
-        // --- Modals & Tabs ---
         function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('show')); }
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -273,7 +281,6 @@
             updateAutocomplete(); document.getElementById('settings-modal').classList.add('show'); renderChart(); renderBwChart();
         }
 
-        // --- Core UI & Logic ---
         function updateAutocomplete() {
             const exList = [...new Set(workouts.map(w => w.exercise.trim()))].sort();
             document.getElementById('exercise-history').innerHTML = exList.map(ex => `<option value="${ex}">`).join('');
@@ -333,7 +340,6 @@
             }
         }
 
-        // --- Interactions ---
         document.getElementById('add-form').addEventListener('submit', (e) => {
             e.preventDefault();
             workouts.push({ id: Date.now().toString(), date: selectedDateString, exercise: document.getElementById('exercise').value.trim(), reps: document.getElementById('reps').value, weight: document.getElementById('weight').value });
@@ -346,7 +352,6 @@
         window.deleteWorkout = (id) => { workouts = workouts.filter(w => w.id !== id); saveData(); };
         function saveData() { localStorage.setItem('gymWorkouts', JSON.stringify(workouts)); updateAutocomplete(); renderTable(); renderCalendar(); }
 
-        // --- Templates ---
         function openTemplatesModal() { 
             const list = document.getElementById('templates-list');
             list.innerHTML = templates.length === 0 ? '<p style="color:var(--text-light); font-size:0.9rem;">No templates saved.</p>' : '';
@@ -380,7 +385,6 @@
         }
         function deleteTemplate(index) { templates.splice(index, 1); localStorage.setItem('gymTemplates', JSON.stringify(templates)); openTemplatesModal(); }
 
-        // --- Copy Day ---
         function openCopyModal() {
             const sel = document.getElementById('copy-date-select');
             const dates = [...new Set(workouts.map(w => w.date))].filter(d => d !== selectedDateString).sort((a,b) => new Date(b)-new Date(a));
@@ -394,7 +398,6 @@
             saveData(); closeModals();
         }
 
-        // --- Bodyweight ---
         function saveBodyweight() {
             const bw = document.getElementById('bw-input').value;
             if(!bw) return;
@@ -404,7 +407,6 @@
             document.getElementById('bw-input').value = ''; renderBwChart();
         }
 
-        // --- Charts ---
         let pChart = null, bChart = null;
         function getChartColors() {
             const d = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -432,7 +434,28 @@
             });
         }
 
-        // --- Timer / Export ---
+        // --- Manual Data Sync Tool ---
+        function exportDataCode() {
+            const payload = { workouts, templates, bodyweights };
+            document.getElementById('data-sync-box').value = btoa(JSON.stringify(payload));
+            alert("Code generated! Copy it from the box.");
+        }
+        function importDataCode() {
+            try {
+                const raw = document.getElementById('data-sync-box').value.trim();
+                const payload = JSON.parse(atob(raw));
+                if(payload.workouts) {
+                    localStorage.setItem('gymWorkouts', JSON.stringify(payload.workouts));
+                    localStorage.setItem('gymTemplates', JSON.stringify(payload.templates || []));
+                    localStorage.setItem('gymBw', JSON.stringify(payload.bodyweights || []));
+                    alert("Data imported successfully! Reloading app...");
+                    location.reload();
+                }
+            } catch(e) {
+                alert("Invalid sync code.");
+            }
+        }
+
         let timerInterval, audioCtx = null;
         function playBeep() { try { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5); } catch(e){} }
         
