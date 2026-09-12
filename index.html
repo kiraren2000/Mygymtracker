@@ -16,15 +16,15 @@
         .card { background: var(--surface); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text); }
         
-        /* Search Styles */
-        .search-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        /* Search & YouTube Link Styles */
+        .search-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
         input[type="text"] { flex: 1; }
         input { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--bg); }
         input:focus { outline: none; border-color: var(--primary); background-color: white; }
         button { padding: 0.75rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
         button:active { opacity: 0.9; transform: scale(0.98); }
-        .search-result { color: var(--primary); font-weight: 600; cursor: pointer; padding: 0.75rem 0; display: block; border-bottom: 1px solid var(--border); }
-        .instruction-box { background: var(--bg); padding: 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.9rem; }
+        .yt-link { display: block; padding: 0.75rem; background-color: #FF0000; color: white; text-decoration: none; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 0.5rem; font-size: 0.95rem; }
+        .instruction-box { background: var(--bg); padding: 1rem; border-radius: 8px; margin-top: 0.5rem; }
         
         /* Calendar Styles */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-weight: bold; }
@@ -36,20 +36,24 @@
         .workout-dot { width: 5px; height: 5px; background-color: #10B981; border-radius: 50%; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); }
         .calendar-day.selected .workout-dot { background-color: white; }
         
-        /* Table Styles */
-        .add-form-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr auto; gap: 0.25rem; margin-bottom: 1rem; align-items: end; }
-        .add-form-row input { padding: 0.5rem; font-size: 0.9rem; }
-        .add-form-row label { display: block; font-size: 0.7rem; color: var(--text-light); margin-bottom: 0.2rem; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+        /* Fixed 2-Row Form Styles (Set-by-Set Logging) */
+        .form-row-1 { margin-bottom: 0.5rem; }
+        .form-row-1 input { width: 100%; font-weight: bold; }
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: center; }
+        .form-row-2 input { width: 100%; padding: 0.75rem 0.5rem; text-align: center; }
+        .add-btn { padding: 0.75rem 1.25rem; font-size: 1.1rem; font-weight: bold; width: 100%; }
+
+        /* Grouped Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; table-layout: fixed; }
         th { font-size: 0.75rem; color: var(--text-light); padding-bottom: 0.5rem; text-align: center; font-weight: 500; }
-        th:first-child { text-align: left; }
-        td { padding: 0.5rem 0; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); }
-        td:first-child { text-align: left; font-weight: 600; font-size: 0.95rem; }
+        td { padding: 0.5rem 0; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
         
-        .edit-input { width: 45px; padding: 4px; border: 1px solid transparent; background: transparent; text-align: center; font-size: 0.95rem; border-bottom: 1px dashed var(--border); border-radius: 0; }
+        .exercise-header td { text-align: left; font-weight: bold; background-color: #F3F4F6; padding: 0.5rem; border-radius: 6px; color: var(--primary); border-bottom: none; font-size: 1rem; }
+        .set-number { color: var(--text-light); font-weight: 500; font-size: 0.85rem; }
+        
+        .edit-input { width: 100%; padding: 4px 0; border: 1px solid transparent; background: transparent; text-align: center; font-size: 0.95rem; border-bottom: 1px dashed var(--border); border-radius: 0; }
         .edit-input:focus { border-bottom: 1px solid var(--primary); background: var(--bg); }
-        .delete-btn { background: transparent; color: #EF4444; padding: 0.25rem 0.5rem; font-size: 1.25rem; font-weight: bold; }
+        .delete-btn { background: transparent; color: #EF4444; padding: 0.25rem; font-size: 1.25rem; font-weight: bold; width: 100%; text-align: center; }
     </style>
 </head>
 <body>
@@ -57,12 +61,12 @@
     <header>🏋️ Gym Tracker</header>
 
     <main>
-        <!-- Search Section -->
+        <!-- YouTube Search Section -->
         <div class="card">
             <h2>Learn an Exercise</h2>
             <div class="search-row">
-                <input type="text" id="search-input" placeholder="e.g., Squat, Bicep">
-                <button onclick="searchOnline()">Search</button>
+                <input type="text" id="search-input" placeholder="e.g., Goblet Squat">
+                <button onclick="generateVideos()">Find Videos</button>
             </div>
             <div id="search-results"></div>
         </div>
@@ -74,124 +78,98 @@
                 <span id="month-year"></span>
                 <button onclick="changeMonth(1)">❯</button>
             </div>
-            <div class="calendar-grid" id="calendar-grid">
-                <!-- Days populated via JS -->
-            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
         </div>
 
-        <!-- Daily Logging & Table Section -->
+        <!-- Set-by-Set Logging Form & Grouped Table -->
         <div class="card">
             <h2 id="selected-date-display">Workouts</h2>
             
-            <form id="add-form" class="add-form-row">
-                <div>
-                    <label>Exercise</label>
-                    <input type="text" id="exercise" required placeholder="Name">
+            <form id="add-form">
+                <div class="form-row-1">
+                    <input type="text" id="exercise" required placeholder="Exercise (e.g., Bench Press)">
                 </div>
-                <div>
-                    <label>Sets</label>
-                    <input type="number" id="sets" required min="1" placeholder="#">
+                <div class="form-row-2">
+                    <input type="number" id="reps" required min="1" placeholder="Reps">
+                    <input type="number" id="weight" step="0.5" required placeholder="Lbs/Kg">
+                    <button type="submit" class="add-btn">+ Set</button>
                 </div>
-                <div>
-                    <label>Reps</label>
-                    <input type="number" id="reps" required min="1" placeholder="#">
-                </div>
-                <div>
-                    <label>Wt (lbs)</label>
-                    <input type="number" id="weight" step="0.5" required placeholder="Wt">
-                </div>
-                <button type="submit">+</button>
             </form>
 
-            <div style="overflow-x: auto;">
+            <div style="overflow-x: auto; margin-top: 1rem;">
                 <table>
                     <thead>
                         <tr>
-                            <th>Exercise</th>
-                            <th>Sets</th>
+                            <th style="width: 25%;">Set</th>
                             <th>Reps</th>
                             <th>Weight</th>
-                            <th></th>
+                            <th style="width: 15%;"></th>
                         </tr>
                     </thead>
-                    <tbody id="table-body">
-                        <!-- Table rows populated via JS -->
-                    </tbody>
+                    <tbody id="table-body"></tbody>
                 </table>
             </div>
         </div>
     </main>
 
     <script>
-        // Data Management & Migration
-        let workouts = JSON.parse(localStorage.getItem('gymWorkouts')) || [];
-        // Convert old timestamp formats (YYYY-MM-DDTHH:MM:SS) to standard calendar dates (YYYY-MM-DD)
-        workouts = workouts.map(w => {
+        // Data Management & Format Migration
+        let rawWorkouts = JSON.parse(localStorage.getItem('gymWorkouts')) || [];
+        let workouts = [];
+        let needsSave = false;
+
+        // Automatically convert old "3 sets" entries into 3 individual set entries
+        rawWorkouts.forEach(w => {
             if (w.date && w.date.includes('T')) w.date = w.date.split('T')[0];
-            return w;
+            
+            if (w.sets && parseInt(w.sets) > 0) {
+                needsSave = true;
+                for(let i = 0; i < parseInt(w.sets); i++) {
+                    workouts.push({
+                        id: w.id + '-' + i,
+                        date: w.date,
+                        exercise: w.exercise,
+                        reps: w.reps,
+                        weight: w.weight
+                    });
+                }
+            } else {
+                workouts.push(w);
+            }
         });
+
+        if (needsSave) {
+            localStorage.setItem('gymWorkouts', JSON.stringify(workouts));
+        }
 
         // Date State
         let currentDate = new Date();
-        // Adjust for local timezone offset to avoid previous day bugs
         const tzOffset = currentDate.getTimezoneOffset() * 60000;
         let selectedDateString = new Date(currentDate - tzOffset).toISOString().split('T')[0];
 
-        // Search API Fixed
-        async function searchOnline() {
-            const query = document.getElementById('search-input').value;
+        // YouTube Smart Links
+        function generateVideos() {
+            const query = document.getElementById('search-input').value.trim();
             const resDiv = document.getElementById('search-results');
             if(!query) return;
             
-            resDiv.innerHTML = '<p style="color:gray; font-size:0.9rem;">Searching...</p>';
-            try {
-                const res = await fetch(`https://wger.de/api/v2/exercise/search/?term=${encodeURIComponent(query)}`);
-                const data = await res.json();
-                
-                if(!data.suggestions || data.suggestions.length === 0) {
-                    resDiv.innerHTML = '<p style="color:gray; font-size:0.9rem;">No exercises found.</p>';
-                    return;
-                }
-                
-                resDiv.innerHTML = '';
-                data.suggestions.slice(0, 5).forEach(ex => {
-                    const span = document.createElement('span');
-                    span.className = 'search-result';
-                    span.innerHTML = `🔍 ${ex.value}`;
-                    span.onclick = () => getDetails(ex.data.id, ex.value);
-                    resDiv.appendChild(span);
-                });
-            } catch (err) {
-                resDiv.innerHTML = '<p style="color:red; font-size:0.9rem;">Error connecting to search.</p>';
-            }
-        }
-
-        async function getDetails(id, name) {
-            const resDiv = document.getElementById('search-results');
-            resDiv.innerHTML = '<p style="color:gray; font-size:0.9rem;">Loading instructions...</p>';
-            try {
-                const res = await fetch(`https://wger.de/api/v2/exerciseinfo/${id}/`);
-                const data = await res.json();
-                
-                resDiv.innerHTML = `
-                    <div class="instruction-box">
-                        <h3 style="margin-bottom: 0.5rem; color: var(--primary);">${name}</h3>
-                        ${data.description || "No description available."}
-                        <div class="search-row" style="margin-top: 1rem;">
-                            <button style="background: #e5e7eb; color: var(--text);" onclick="document.getElementById('search-results').innerHTML=''">Close</button>
-                            <button onclick="useExercise('${name}')">Log This</button>
-                        </div>
-                    </div>
-                `;
-            } catch (err) {
-                resDiv.innerHTML = '<p style="color:red; font-size:0.9rem;">Error loading details.</p>';
-            }
+            const encoded = encodeURIComponent(query);
+            
+            resDiv.innerHTML = `
+                <div class="instruction-box">
+                    <h3 style="margin-bottom: 0.5rem; color: var(--primary);">${query}</h3>
+                    <p style="margin-bottom: 1rem; color: var(--text-light); font-size: 0.85rem;">Tap below to open the YouTube app:</p>
+                    <a href="https://www.youtube.com/results?search_query=${encoded}+form+tutorial+shorts" target="_blank" class="yt-link">📱 Watch Shorts Tutorial</a>
+                    <a href="https://www.youtube.com/results?search_query=${encoded}+form+guide" target="_blank" class="yt-link" style="background-color: #111827;">🎥 Full Form Guide</a>
+                    <button onclick="useExercise('${query.replace(/'/g, "\\'")}')" style="width: 100%; margin-top: 0.5rem;">Log This Exercise Below</button>
+                </div>
+            `;
         }
 
         function useExercise(name) {
             document.getElementById('exercise').value = name;
             document.getElementById('search-results').innerHTML = '';
-            document.getElementById('sets').focus();
+            document.getElementById('reps').focus();
         }
 
         // Calendar Logic
@@ -206,7 +184,6 @@
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            // Weekday Headers
             ['S','M','T','W','T','F','S'].forEach(d => {
                 const el = document.createElement('div');
                 el.className = 'day-name';
@@ -214,12 +191,10 @@
                 grid.appendChild(el);
             });
 
-            // Empty prefix days
             for (let i = 0; i < firstDay; i++) {
                 grid.appendChild(document.createElement('div'));
             }
 
-            // Days
             for (let i = 1; i <= daysInMonth; i++) {
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'calendar-day';
@@ -249,12 +224,11 @@
             renderCalendar();
         }
 
-        // Editable Table Logic
+        // Grouped Editable Table Logic
         function renderTable() {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
 
-            // Format UI header string
             const [y, m, d] = selectedDateString.split('-');
             const displayDate = new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
             document.getElementById('selected-date-display').innerText = `Log for ${displayDate}`;
@@ -262,43 +236,58 @@
             const dailyWorkouts = workouts.filter(w => w.date === selectedDateString);
 
             if (dailyWorkouts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:gray; padding: 2rem 0; font-size: 0.9rem;">No workouts logged on this date.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:gray; padding: 2rem 0; font-size: 0.9rem;">No sets logged on this date.</td></tr>';
                 return;
             }
 
+            // Group sets by Exercise Name
+            const groupedWorkouts = {};
             dailyWorkouts.forEach(w => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${w.exercise}</td>
-                    <td><input type="number" class="edit-input" value="${w.sets}" onchange="updateWorkout('${w.id}', 'sets', this.value)"></td>
-                    <td><input type="number" class="edit-input" value="${w.reps}" onchange="updateWorkout('${w.id}', 'reps', this.value)"></td>
-                    <td><input type="number" class="edit-input" value="${w.weight}" onchange="updateWorkout('${w.id}', 'weight', this.value)"></td>
-                    <td><button class="delete-btn" onclick="deleteWorkout('${w.id}')">×</button></td>
-                `;
-                tbody.appendChild(tr);
+                const name = w.exercise.trim();
+                if (!groupedWorkouts[name]) groupedWorkouts[name] = [];
+                groupedWorkouts[name].push(w);
             });
+
+            for (const [exerciseName, sets] of Object.entries(groupedWorkouts)) {
+                // Render Exercise Header Row
+                tbody.innerHTML += `
+                    <tr class="exercise-header">
+                        <td colspan="4">${exerciseName}</td>
+                    </tr>
+                `;
+                
+                // Render Set Rows under the header
+                sets.forEach((w, index) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="set-number">Set ${index + 1}</td>
+                            <td><input type="number" class="edit-input" value="${w.reps}" onchange="updateWorkout('${w.id}', 'reps', this.value)"></td>
+                            <td><input type="number" class="edit-input" value="${w.weight}" onchange="updateWorkout('${w.id}', 'weight', this.value)"></td>
+                            <td><button class="delete-btn" onclick="deleteWorkout('${w.id}')">×</button></td>
+                        </tr>
+                    `;
+                });
+            }
         }
 
-        // Form Submit
+        // Log a Single Set
         document.getElementById('add-form').addEventListener('submit', (e) => {
             e.preventDefault();
             workouts.push({
-                id: Date.now().toString(),
+                id: Date.now().toString() + Math.floor(Math.random() * 1000), // Ensure unique ID
                 date: selectedDateString,
                 exercise: document.getElementById('exercise').value,
-                sets: document.getElementById('sets').value,
                 reps: document.getElementById('reps').value,
                 weight: document.getElementById('weight').value
             });
             saveData();
             
-            // Clear only number inputs, keep exercise text for rapid entry
-            document.getElementById('sets').value = '';
-            document.getElementById('reps').value = '';
-            document.getElementById('weight').value = '';
+            // Keep the exercise and weight filled in, just select the reps so you can easily type the next set
+            const repsInput = document.getElementById('reps');
+            repsInput.focus();
+            repsInput.select();
         });
 
-        // Edit existing log
         window.updateWorkout = (id, field, value) => {
             const index = workouts.findIndex(w => w.id === id);
             if (index !== -1) {
@@ -307,7 +296,6 @@
             }
         };
 
-        // Delete existing log
         window.deleteWorkout = (id) => {
             workouts = workouts.filter(w => w.id !== id);
             saveData();
@@ -325,3 +313,4 @@
     </script>
 </body>
 </html>
+
