@@ -33,8 +33,13 @@
         input, select, textarea { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--bg); color: var(--text); width: 100%; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
         button.primary-btn { padding: 0.75rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; }
-        button.secondary-btn { padding: 0.5rem; background-color: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
+        button.secondary-btn { padding: 0.5rem; background-color: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.25rem; }
         
+        /* Search Section */
+        .search-row { display: flex; gap: 0.5rem; }
+        .yt-link { display: block; padding: 0.75rem; color: white; text-decoration: none; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 0.5rem; font-size: 0.95rem; }
+        .instruction-box { background: var(--bg); padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+
         /* Calendar */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-weight: bold; }
         .calendar-header button { background: transparent; color: var(--primary); padding: 0.5rem; border: none; font-size: 1.2rem; cursor: pointer; }
@@ -89,8 +94,20 @@
         .template-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
         .toggle-label { display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem 0; font-weight: 500; border-bottom: 1px solid var(--border); }
 
+        /* Tutorial Specific Styles */
+        .tutorial-slide { display: none; text-align: center; }
+        .tutorial-slide.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        .tutorial-slide h3 { font-size: 1.4rem; color: var(--primary); margin-bottom: 1rem; }
+        .tutorial-slide p { font-size: 1rem; color: var(--text); line-height: 1.5; margin-bottom: 1rem; }
+        .tutorial-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .tutorial-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; }
+        .dot-container { display: flex; gap: 0.4rem; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background-color: var(--border); }
+        .dot.active { background-color: var(--primary); }
+        
         .flash-screen { animation: flashBg 1s 3; }
         @keyframes flashBg { 0% { background-color: var(--success); } 100% { background-color: var(--bg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -104,6 +121,17 @@
     </header>
 
     <main>
+        <!-- Search Section -->
+        <div class="card">
+            <h2>Learn an Exercise</h2>
+            <div class="search-row">
+                <input type="text" id="search-input" placeholder="e.g., Goblet Squat">
+                <button class="primary-btn" style="width: auto; padding: 0.75rem 1.25rem;" onclick="generateVideos()">Find</button>
+            </div>
+            <div id="search-results"></div>
+        </div>
+
+        <!-- Calendar -->
         <div class="card">
             <div class="calendar-header">
                 <button onclick="changeMonth(-1)">❮</button>
@@ -113,6 +141,7 @@
             <div class="calendar-grid" id="calendar-grid"></div>
         </div>
 
+        <!-- Logger -->
         <div class="card">
             <h2>
                 <span id="selected-date-display">Workouts</span>
@@ -165,7 +194,62 @@
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Walkthrough Tutorial Modal -->
+    <div class="modal" id="tutorial-modal" style="z-index: 200;">
+        <div class="modal-content">
+            <!-- Slide 1 -->
+            <div class="tutorial-slide active" id="slide-0">
+                <div class="tutorial-icon">👋</div>
+                <h3>Welcome to Gym Tracker!</h3>
+                <p>Your entirely private, offline-first workout companion.</p>
+                <p>Everything you log here is saved directly to your device's memory. No accounts, no subscriptions, no internet required to train.</p>
+            </div>
+            
+            <!-- Slide 2 -->
+            <div class="tutorial-slide" id="slide-1">
+                <div class="tutorial-icon">📝</div>
+                <h3>Set-by-Set Logging</h3>
+                <p>Type your exercise, reps, and weight, then hit <strong>+ Set</strong>.</p>
+                <p>The app will automatically remember your exercises for quick autocomplete, calculate your 1-Rep Max, and group all your sets together cleanly in the table below.</p>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="tutorial-slide" id="slide-2">
+                <div class="tutorial-icon">📋</div>
+                <h3>Templates & Copying</h3>
+                <p>Hate typing the same routine? Use <strong>🔖 Templates</strong> to save your favorite routines (like "Leg Day").</p>
+                <p>Or use <strong>📋 Copy Day</strong> to instantly duplicate every set from a previous gym session to today's date.</p>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="tutorial-slide" id="slide-3">
+                <div class="tutorial-icon">⏱️</div>
+                <h3>Smart Rest Timer</h3>
+                <p>Use the floating bar at the bottom to track your rests. The screen will gently flash green when time is up.</p>
+                <p>Want it automated? Go to Settings (⚙️) and turn on <strong>Auto-Start Rest Timer</strong> to trigger it the second you log a set.</p>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="tutorial-slide" id="slide-4">
+                <div class="tutorial-icon">📲</div>
+                <h3>Home Screen Sync</h3>
+                <p>Added this app to your Home Screen? Safari and Home Screen apps keep separate storage.</p>
+                <p>To move your data, open Settings (⚙️) in Safari, tap <strong>Get Day Code</strong>, and simply <strong>Load</strong> that code in your Home Screen app!</p>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="tutorial-nav">
+                <button class="secondary-btn" id="tut-prev" onclick="changeSlide(-1)" style="visibility: hidden;">Back</button>
+                <div class="dot-container" id="tut-dots">
+                    <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+                <button class="primary-btn" id="tut-next" onclick="changeSlide(1)" style="width: auto;">Next</button>
+            </div>
+            <button class="secondary-btn" style="width: 100%; margin-top: 1rem; border: none; background: transparent; color: var(--text-light);" onclick="closeTutorial()">Skip Tutorial</button>
+        </div>
+    </div>
+
+    <!-- Core Modals -->
     <div class="modal" id="copy-modal">
         <div class="modal-content">
             <div class="modal-header">Copy Day <button class="icon-btn" style="color: var(--text);" onclick="closeModals()">✕</button></div>
@@ -177,12 +261,10 @@
     <div class="modal" id="templates-modal">
         <div class="modal-content">
             <div class="modal-header">Templates <button class="icon-btn" style="color: var(--text);" onclick="closeModals()">✕</button></div>
-            
             <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
                 <input type="text" id="template-name" placeholder="Name (e.g., Push Day)">
                 <button class="primary-btn" style="width: auto;" onclick="saveTemplate()">Save</button>
             </div>
-            
             <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Saved Routines</h3>
             <div id="templates-list"></div>
         </div>
@@ -218,6 +300,9 @@
 
             <!-- Settings Tab -->
             <div id="tab-settings" class="tab-content">
+                
+                <button class="secondary-btn" style="width: 100%; margin-bottom: 1.5rem; border-color: var(--primary); color: var(--primary);" onclick="openTutorial()">❓ View App Tutorial</button>
+
                 <label class="toggle-label">
                     Auto-Start Rest Timer
                     <select id="auto-timer-select" onchange="updateAutoTimer()">
@@ -233,13 +318,13 @@
                     <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem;">Export / Import Single Day</h3>
                     <select id="export-date-select" style="margin-bottom: 0.5rem;"></select>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <button class="secondary-btn" style="flex:1; justify-content:center;" onclick="exportDayCode()">Get Day Code</button>
+                        <button class="secondary-btn" style="flex:1;" onclick="exportDayCode()">Get Day Code</button>
                     </div>
                     <textarea id="data-sync-box" rows="2" placeholder="Paste day code here..." style="font-size: 0.8rem; margin-bottom: 0.5rem;"></textarea>
-                    <button class="secondary-btn" style="width: 100%; justify-content: center;" onclick="importDayCode()">Load Day Code</button>
+                    <button class="secondary-btn" style="width: 100%;" onclick="importDayCode()">Load Day Code</button>
                 </div>
 
-                <button class="secondary-btn" style="width: 100%; margin-top: 1.5rem; justify-content: center;" onclick="exportCSV()">💾 Export All Data (CSV)</button>
+                <button class="secondary-btn" style="width: 100%; margin-top: 1.5rem;" onclick="exportCSV()">💾 Export All Data (CSV)</button>
             </div>
         </div>
     </div>
@@ -254,6 +339,57 @@
         const tzOffset = currentDate.getTimezoneOffset() * 60000;
         let selectedDateString = new Date(currentDate - tzOffset).toISOString().split('T')[0];
         
+        // --- Walkthrough Tutorial Logic ---
+        let currentSlideIndex = 0;
+        const totalSlides = 5;
+
+        window.onload = () => {
+            if (!localStorage.getItem('gymTutorialSeen')) {
+                openTutorial();
+            }
+        };
+
+        function openTutorial() {
+            closeModals();
+            currentSlideIndex = 0;
+            updateTutorialView();
+            document.getElementById('tutorial-modal').classList.add('show');
+        }
+
+        function closeTutorial() {
+            localStorage.setItem('gymTutorialSeen', 'true');
+            document.getElementById('tutorial-modal').classList.remove('show');
+        }
+
+        function changeSlide(direction) {
+            currentSlideIndex += direction;
+            if (currentSlideIndex >= totalSlides) {
+                closeTutorial();
+            } else {
+                updateTutorialView();
+            }
+        }
+
+        function updateTutorialView() {
+            // Update slides
+            for(let i = 0; i < totalSlides; i++) {
+                document.getElementById('slide-' + i).classList.remove('active');
+            }
+            document.getElementById('slide-' + currentSlideIndex).classList.add('active');
+
+            // Update dots
+            const dots = document.getElementById('tut-dots').children;
+            for(let i = 0; i < dots.length; i++) {
+                dots[i].classList.remove('active');
+            }
+            dots[currentSlideIndex].classList.add('active');
+
+            // Update buttons
+            document.getElementById('tut-prev').style.visibility = currentSlideIndex === 0 ? 'hidden' : 'visible';
+            document.getElementById('tut-next').innerText = currentSlideIndex === totalSlides - 1 ? "Let's Go!" : "Next";
+        }
+
+        // --- Core Application Logic ---
         const autoTimerSelect = document.getElementById('auto-timer-select');
         if (autoTimerSelect) autoTimerSelect.value = autoTimerDuration;
 
@@ -274,6 +410,28 @@
             renderChart(); renderBwChart();
         }
 
+        function generateVideos() {
+            const query = document.getElementById('search-input').value.trim();
+            const resDiv = document.getElementById('search-results');
+            if(!query) return;
+            const encoded = encodeURIComponent(query);
+            resDiv.innerHTML = `
+                <div class="instruction-box">
+                    <h3 style="margin-bottom: 0.5rem; color: var(--text);">${query}</h3>
+                    <p style="margin-bottom: 1rem; color: var(--text-light); font-size: 0.85rem;">Select a view:</p>
+                    <a href="https://www.google.com/search?tbm=isch&q=${encoded}+anatomy+form+muscles+used" target="_blank" class="yt-link" style="background-color: #3B82F6;">🖼️ View Form Diagram</a>
+                    <a href="https://www.youtube.com/results?search_query=${encoded}+form+tutorial+shorts" target="_blank" class="yt-link" style="background-color: #EF4444;">📱 Watch Video Tutorial</a>
+                    <button class="secondary-btn" onclick="useExercise('${query.replace(/'/g, "\\'")}')" style="width: 100%; margin-top: 1rem; justify-content: center; padding: 0.75rem;">Log This Exercise Below</button>
+                </div>
+            `;
+        }
+
+        function useExercise(name) {
+            document.getElementById('exercise').value = name;
+            document.getElementById('search-results').innerHTML = '';
+            document.getElementById('reps').focus();
+        }
+
         function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('show')); }
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -285,11 +443,9 @@
             if(tabId === 'bodyweight') renderBwChart();
         }
         function openSettingsModal() { 
-            updateAutocomplete(); 
-            updateExportDropdown();
+            updateAutocomplete(); updateExportDropdown();
             document.getElementById('settings-modal').classList.add('show'); 
-            renderChart(); 
-            renderBwChart();
+            renderChart(); renderBwChart();
         }
 
         function updateAutocomplete() {
@@ -309,8 +465,7 @@
             if (!sel) return;
             const dates = [...new Set(workouts.map(w => w.date))].sort((a,b) => new Date(b)-new Date(a));
             if(dates.length === 0) {
-                sel.innerHTML = '<option value="">No workouts available</option>';
-                return;
+                sel.innerHTML = '<option value="">No workouts available</option>'; return;
             }
             sel.innerHTML = dates.map(d => `<option value="${d}">${new Date(d.split('-')[0], d.split('-')[1]-1, d.split('-')[2]).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} (${workouts.filter(w=>w.date===d).length} sets)</option>`).join('');
         }
@@ -347,7 +502,6 @@
             if (dateDisp) dateDisp.innerText = `Log for ${new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`;
             
             const dailyWorkouts = workouts.filter(w => w.date === selectedDateString);
-            
             const vol = dailyWorkouts.reduce((sum, w) => sum + (parseFloat(w.reps) * parseFloat(w.weight)), 0);
             const volBadge = document.getElementById('daily-volume');
             if (volBadge) volBadge.innerText = vol.toLocaleString() + ' lbs/kg';
