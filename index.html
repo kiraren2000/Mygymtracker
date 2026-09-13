@@ -85,7 +85,7 @@
         .meta-row td { padding: 0 0 0.5rem 0; border-bottom: 1px solid var(--border); }
         .meta-container { display: flex; gap: 0.5rem; padding: 0 0.5rem; align-items: center; }
 
-        /* Muscle Heatmap SVG Styles */
+        /* Detailed Muscle SVG Styles */
         .muscle-group { fill: var(--border); transition: fill 0.4s ease-in-out; }
 
         /* Floating Rest Timer */
@@ -148,7 +148,6 @@
     </header>
 
     <main>
-        <!-- Search -->
         <div class="card">
             <h2>Learn an Exercise</h2>
             <div class="search-row">
@@ -158,7 +157,6 @@
             <div id="search-results"></div>
         </div>
 
-        <!-- Calendar -->
         <div class="card">
             <div class="calendar-header">
                 <button onclick="changeMonth(-1)">❮</button>
@@ -168,7 +166,6 @@
             <div class="calendar-grid" id="calendar-grid"></div>
         </div>
 
-        <!-- Logger -->
         <div class="card">
             <h2>
                 <span id="selected-date-display">Workouts</span>
@@ -198,7 +195,7 @@
                 </div>
                 <div class="form-row-3">
                     <input type="number" id="rpe" min="1" max="10" placeholder="RPE">
-                    <input type="text" id="notes" placeholder="Notes (e.g. Dropset, Paused)" autocomplete="off">
+                    <input type="text" id="notes" placeholder="Notes (e.g. Dropset)" autocomplete="off">
                 </div>
             </form>
 
@@ -217,33 +214,45 @@
             </div>
         </div>
 
-        <!-- NEW: Targeted Muscles Heatmap -->
+        <!-- High-Detail Muscle Heatmap -->
         <div class="card" id="heatmap-card">
             <h2>Targeted Muscles</h2>
             <div style="display: flex; justify-content: space-around; margin-bottom: 1rem;">
                 <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-light); letter-spacing: 1px;">FRONT</span>
                 <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-light); letter-spacing: 1px;">BACK</span>
             </div>
-            <!-- Custom Geometric Muscle SVG -->
-            <svg viewBox="0 0 240 200" style="width: 100%; max-width: 300px; display: block; margin: 0 auto;">
-                <!-- Front View -->
-                <circle cx="60" cy="20" r="14" class="muscle-group" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M25,45 Q60,30 95,45 L85,55 Q60,50 35,55 Z" class="muscle-group mg-shoulders" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M35,55 Q60,50 85,55 L80,80 Q60,85 40,80 Z" class="muscle-group mg-chest" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M41,81 Q60,85 79,81 L73,115 Q60,120 47,115 Z" class="muscle-group mg-core" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M23,48 L10,100 L22,100 L32,58 Z" class="muscle-group mg-arms" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M97,48 L110,100 L98,100 L88,58 Z" class="muscle-group mg-arms" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M46,116 L30,195 L45,195 L58,125 Z" class="muscle-group mg-legs" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M74,116 L90,195 L75,195 L62,125 Z" class="muscle-group mg-legs" stroke="var(--solid-surface)" stroke-width="2"/>
+            <svg viewBox="0 0 200 250" style="width: 100%; max-width: 320px; display: block; margin: 0 auto;" stroke="var(--solid-surface)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+                <!-- FRONT VIEW -->
+                <ellipse cx="50" cy="18" rx="10" ry="12" class="muscle-group" /> <!-- Head -->
+                <path d="M46 28 L54 28 L56 35 L44 35 Z" class="muscle-group" /> <!-- Neck -->
+                <path d="M30 40 Q50 45 70 40 L65 65 Q50 70 35 65 Z" class="muscle-group mg-chest" /> <!-- Chest -->
+                <path d="M35 67 Q50 72 65 67 L60 105 Q50 110 40 105 Z" class="muscle-group mg-core" /> <!-- Abs -->
+                <path d="M28 40 L16 52 L20 70 L33 63 Z" class="muscle-group mg-shoulders" /> <!-- L Shoulder -->
+                <path d="M72 40 L84 52 L80 70 L67 63 Z" class="muscle-group mg-shoulders" /> <!-- R Shoulder -->
+                <path d="M18 73 L13 95 L23 95 L26 73 Z" class="muscle-group mg-biceps" /> <!-- L Bicep -->
+                <path d="M82 73 L87 95 L77 95 L74 73 Z" class="muscle-group mg-biceps" /> <!-- R Bicep -->
+                <path d="M12 98 L6 130 L16 130 L22 98 Z" class="muscle-group mg-forearms" /> <!-- L Forearm -->
+                <path d="M88 98 L94 130 L84 130 L78 98 Z" class="muscle-group mg-forearms" /> <!-- R Forearm -->
+                <path d="M38 108 L48 108 L45 160 L30 155 Z" class="muscle-group mg-quads" /> <!-- L Quad -->
+                <path d="M52 108 L62 108 L70 155 L55 160 Z" class="muscle-group mg-quads" /> <!-- R Quad -->
+                <path d="M30 163 L43 168 L40 215 L28 215 Z" class="muscle-group mg-calves" /> <!-- L Calf -->
+                <path d="M70 163 L57 168 L60 215 L72 215 Z" class="muscle-group mg-calves" /> <!-- R Calf -->
 
-                <!-- Back View -->
-                <circle cx="180" cy="20" r="14" class="muscle-group" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M145,45 Q180,30 215,45 L205,55 Q180,50 155,55 Z" class="muscle-group mg-shoulders" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M155,55 Q180,50 205,55 L193,115 Q180,120 167,115 Z" class="muscle-group mg-back" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M143,48 L130,100 L142,100 L152,58 Z" class="muscle-group mg-arms" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M217,48 L230,100 L218,100 L208,58 Z" class="muscle-group mg-arms" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M166,116 L150,195 L165,195 L178,125 Z" class="muscle-group mg-legs" stroke="var(--solid-surface)" stroke-width="2"/>
-                <path d="M194,116 L210,195 L195,195 L182,125 Z" class="muscle-group mg-legs" stroke="var(--solid-surface)" stroke-width="2"/>
+                <!-- BACK VIEW -->
+                <ellipse cx="150" cy="18" rx="10" ry="12" class="muscle-group" /> <!-- Head -->
+                <path d="M146 28 L154 28 L156 35 L144 35 Z" class="muscle-group" /> <!-- Neck -->
+                <path d="M130 40 Q150 45 170 40 L165 65 Q150 70 135 65 Z" class="muscle-group mg-back" /> <!-- Upper Back / Traps -->
+                <path d="M135 67 Q150 72 165 67 L160 105 Q150 110 140 105 Z" class="muscle-group mg-back" /> <!-- Lats / Lower Back -->
+                <path d="M128 40 L116 52 L120 70 L133 63 Z" class="muscle-group mg-shoulders" /> <!-- L Shoulder (Back) -->
+                <path d="M172 40 L184 52 L180 70 L167 63 Z" class="muscle-group mg-shoulders" /> <!-- R Shoulder (Back) -->
+                <path d="M118 73 L113 95 L123 95 L126 73 Z" class="muscle-group mg-triceps" /> <!-- L Tricep -->
+                <path d="M182 73 L187 95 L177 95 L174 73 Z" class="muscle-group mg-triceps" /> <!-- R Tricep -->
+                <path d="M112 98 L106 130 L116 130 L122 98 Z" class="muscle-group mg-forearms" /> <!-- L Forearm (Back) -->
+                <path d="M188 98 L194 130 L184 130 L178 98 Z" class="muscle-group mg-forearms" /> <!-- R Forearm (Back) -->
+                <path d="M138 108 L148 108 L145 160 L130 155 Z" class="muscle-group mg-glutes" /> <!-- L Glute/Ham -->
+                <path d="M152 108 L162 108 L170 155 L155 160 Z" class="muscle-group mg-glutes" /> <!-- R Glute/Ham -->
+                <path d="M130 163 L143 168 L140 215 L128 215 Z" class="muscle-group mg-calves" /> <!-- L Calf (Back) -->
+                <path d="M170 163 L157 168 L160 215 L172 215 Z" class="muscle-group mg-calves" /> <!-- R Calf (Back) -->
             </svg>
         </div>
     </main>
@@ -365,7 +374,7 @@
             <div class="tutorial-slide" id="slide-2">
                 <div style="font-size:3rem; margin-bottom:1rem;">🔥</div>
                 <h3>Muscle Heatmap</h3>
-                <p>Scroll down to see the <strong>Targeted Muscles</strong> 3D map. As you log exercises, the app scans the names and automatically highlights the muscles you are training in red!</p>
+                <p>Scroll down to see the <strong>Targeted Muscles</strong> map. As you log exercises, the app scans the names and highlights the specific muscle groups (biceps, quads, chest, etc.) you are training!</p>
             </div>
             <div class="tutorial-slide" id="slide-3">
                 <div style="font-size:3rem; margin-bottom:1rem;">⏱️</div>
@@ -391,7 +400,18 @@
     </div>
 
     <script>
-        let workouts = JSON.parse(localStorage.getItem('gymWorkouts')) || [];
+        // --- Bulletproof Initialization & Scrubber ---
+        let rawWorkouts = JSON.parse(localStorage.getItem('gymWorkouts')) || [];
+        let workouts = rawWorkouts.map(w => ({
+            id: w.id || Date.now().toString(),
+            date: w.date || new Date().toISOString().split('T')[0],
+            exercise: w.exercise || '',
+            reps: w.reps || '',
+            weight: w.weight || '',
+            rpe: w.rpe || '',
+            notes: w.notes || ''
+        }));
+        
         let templates = JSON.parse(localStorage.getItem('gymTemplates')) || [];
         let bodyweights = JSON.parse(localStorage.getItem('gymBw')) || [];
         let autoTimerDuration = parseInt(localStorage.getItem('gymAutoTimer')) || 0;
@@ -419,7 +439,12 @@
         let currentSlideIndex = 0;
         const totalSlides = 5;
 
-        window.onload = () => { if (!localStorage.getItem('gymTutorialSeen')) openTutorial(); };
+        // Ensure Tutorial Opens
+        window.onload = () => { 
+            if (!localStorage.getItem('gymTutorialSeen')) {
+                openTutorial(); 
+            }
+        };
 
         function openTutorial() { closeModals(); currentSlideIndex = 0; updateTutorialView(); document.getElementById('tutorial-modal').classList.add('show'); }
         function closeTutorial() { localStorage.setItem('gymTutorialSeen', 'true'); document.getElementById('tutorial-modal').classList.remove('show'); }
@@ -493,7 +518,7 @@
         function updateAutocomplete() {
             const historyEl = document.getElementById('exercise-history');
             if (!historyEl) return;
-            const exList = [...new Set(workouts.map(w => w.exercise.trim()))].sort();
+            const exList = [...new Set(workouts.map(w => w.exercise.trim()))].filter(Boolean).sort();
             historyEl.innerHTML = exList.map(ex => `<option value="${ex}">`).join('');
             const sel = document.getElementById('chart-exercise-select');
             if (!sel) return;
@@ -505,7 +530,7 @@
         function updateExportDropdown() {
             const sel = document.getElementById('export-date-select');
             if (!sel) return;
-            const dates = [...new Set(workouts.map(w => w.date))].sort((a,b) => new Date(b)-new Date(a));
+            const dates = [...new Set(workouts.map(w => w.date).filter(Boolean))].sort((a,b) => new Date(b)-new Date(a));
             if(dates.length === 0) {
                 sel.innerHTML = '<option value="">No workouts available</option>'; return;
             }
@@ -535,7 +560,7 @@
         }
         function changeMonth(offset) { currentDate.setMonth(currentDate.getMonth() + offset); renderCalendar(); }
 
-        // --- NEW: Muscle Mapping Engine ---
+        // --- NEW: Highly Accurate Anatomical Scanner ---
         function updateHeatmap() {
             document.querySelectorAll('.muscle-group').forEach(el => { el.style.fill = 'var(--border)'; });
             
@@ -546,12 +571,16 @@
             
             dailyWorkouts.forEach(w => {
                 const ex = w.exercise.toLowerCase();
-                if (ex.match(/bench|chest|pec|fly|push up|pushup|dip/)) activeGroups.add('chest');
-                if (ex.match(/pull up|pullup|row|lat|back|chin up|deadlift/)) activeGroups.add('back');
-                if (ex.match(/squat|leg|press|calf|lunge|deadlift|extension|curl|quad|glute|hamstring/)) activeGroups.add('legs');
-                if (ex.match(/shoulder|overhead|ohp|lateral|raise|delt|military/)) activeGroups.add('shoulders');
-                if (ex.match(/curl|tricep|bicep|arm|pushdown|skullcrusher/)) activeGroups.add('arms');
-                if (ex.match(/crunch|abs|core|plank|sit up|leg raise/)) activeGroups.add('core');
+                if (ex.includes('bench') || ex.includes('chest') || ex.includes('pec') || ex.includes('fly') || ex.includes('push up') || ex.includes('pushup')) activeGroups.add('chest');
+                if (ex.includes('pull up') || ex.includes('pullup') || ex.includes('row') || ex.includes('lat') || ex.includes('back') || ex.includes('chin')) activeGroups.add('back');
+                if (ex.includes('shoulder') || ex.includes('overhead') || ex.includes('ohp') || ex.includes('lateral') || ex.includes('raise') || ex.includes('delt') || ex.includes('military')) activeGroups.add('shoulders');
+                if (ex.includes('bicep') || (ex.includes('curl') && !ex.includes('leg') && !ex.includes('hamstring'))) activeGroups.add('biceps');
+                if (ex.includes('tricep') || ex.includes('pushdown') || ex.includes('skullcrusher') || (ex.includes('extension') && !ex.includes('leg')) || ex.includes('dip')) activeGroups.add('triceps');
+                if (ex.includes('forearm') || ex.includes('wrist')) activeGroups.add('forearms');
+                if (ex.includes('crunch') || ex.includes('abs') || ex.includes('core') || ex.includes('plank') || ex.includes('sit up') || (ex.includes('raise') && ex.includes('leg'))) activeGroups.add('core');
+                if (ex.includes('squat') || ex.includes('lunge') || ex.includes('quad') || (ex.includes('press') && ex.includes('leg')) || (ex.includes('extension') && ex.includes('leg'))) activeGroups.add('quads');
+                if (ex.includes('deadlift') || ex.includes('rdl') || ex.includes('glute') || ex.includes('hamstring') || (ex.includes('curl') && ex.includes('leg')) || ex.includes('thrust')) activeGroups.add('glutes');
+                if (ex.includes('calf') || ex.includes('calves')) activeGroups.add('calves');
             });
             
             activeGroups.forEach(group => {
@@ -783,7 +812,8 @@
             const link = document.createElement("a"); link.setAttribute("href", encodeURI(csv)); link.setAttribute("download", `Gym_Tracker_Backup_${new Date().toISOString().split('T')[0]}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
-        updateAutocomplete(); renderCalendar(); renderTable(); updateHeatmap();
+        // Initialize safely
+        try { updateAutocomplete(); renderCalendar(); renderTable(); updateHeatmap(); } catch(e) { console.log(e); }
     </script>
 </body>
 </html>
